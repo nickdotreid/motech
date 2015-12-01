@@ -30,3 +30,5 @@ docs/source/packages.rst
 docs/source/packages.txt
 docs/source/org
 .tx/config
+static/node_modules
+static/bower_components

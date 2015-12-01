@@ -275,6 +275,10 @@
                             </directory>
                             <targetPath>WEB-INF/bundles</targetPath>
                         </resource>
+                        <resource>
+                            <directory>../../static</directory>
+                            <targetPath>static</targetPath>
+                        </resource>
                     </webResources>
                 </configuration>
             </plugin>

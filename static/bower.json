@@ -1,0 +1,19 @@
+{
+  "name": "motech.ui",
+  "description": "User interface files for the motech project.",
+  "main": "index.js",
+  "authors": [
+    "Nick Reid <nickreid@nickreid.com>"
+  ],
+  "license": "BSD-2-Clause",
+  "moduleType": [],
+  "homepage": "motechsuite.org",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
