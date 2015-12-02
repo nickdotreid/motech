@@ -32,3 +32,4 @@ docs/source/org
 .tx/config
 ui/node_modules
 ui/bower_components
+ui/build
