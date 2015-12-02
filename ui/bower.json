@@ -29,7 +29,22 @@
     "tagit": "*",
     "tagmanager": "~3.0.2",
     "bootstrap-tagsinput": "tagsinput#~0.7.1",
-    "jQuery-Timepicker-Addon": "https://github.com/trentrichardson/jQuery-Timepicker-Addon"
+    "jQuery-Timepicker-Addon": "https://github.com/trentrichardson/jQuery-Timepicker-Addon",
+    "swagger-ui": "https://github.com/swagger-api/swagger-ui",
+    "swagger-js": "https://github.com/swagger-api/swagger-js",
+    "blockUI": "jquery.blockUI#*",
+    "jquery.caret": "~1.5.2",
+    "jquery.cookie": "~1.4.1",
+    "jquery.bbq": "~1.2.1",
+    "form": "https://github.com/malsup/form/",
+    "jquery-i18n-properties": "https://github.com/jquery-i18n-properties/jquery-i18n-properties",
+    "livequery": "https://github.com/brandonaaron/livequery",
+    "jquery-migrate": "https://github.com/jquery/jquery-migrate/",
+    "select2": "https://github.com/select2/select2",
+    "jquery.sidebar": "*",
+    "jQuery-slideto": "https://github.com/Sleavely/jQuery-slideto",
+    "jquerytools": "https://github.com/jquerytools/jquerytools",
+    "jquery-gentleSelect": "https://github.com/shawnchin/jquery-gentleSelect"
   },
   "resolutions": {
     "jquery": "1.11.3"
