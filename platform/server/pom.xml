@@ -276,7 +276,7 @@
                             <targetPath>WEB-INF/bundles</targetPath>
                         </resource>
                         <resource>
-                            <directory>../../static</directory>
+                            <directory>../../ui/build/assets</directory>
                             <targetPath>static</targetPath>
                         </resource>
                     </webResources>
