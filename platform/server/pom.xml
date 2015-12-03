@@ -277,7 +277,7 @@
                         </resource>
                         <resource>
                             <directory>../../ui/build/assets</directory>
-                            <targetPath>static</targetPath>
+                            <targetPath>static/common</targetPath>
                         </resource>
                     </webResources>
                 </configuration>
