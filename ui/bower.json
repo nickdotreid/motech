@@ -45,7 +45,7 @@
     "jQuery-slideto": "https://github.com/Sleavely/jQuery-slideto",
     "jquerytools": "https://github.com/jquerytools/jquerytools",
     "jquery-gentleSelect": "https://github.com/shawnchin/jquery-gentleSelect",
-    "loadOnDemand": "https://github.com/AndyGrom/loadOnDemand",
+    "loadOnDemand": "git://github.com/AndyGrom/loadOnDemand.git",
     "angular-cookies": "~1.4.8",
     "angular-resource": "~1.4.8",
     "angular-route": "~1.4.8",
@@ -62,7 +62,10 @@
         "./build/angular-ui.js",
         "./build/angular-ui-ieshiv.js",
         "./build/angular-ui.css"
-        ]
+      ]
+    },
+    "loadOnDemand": {
+      "main": "./loadOnDemand.js"
     }
   }
 }
