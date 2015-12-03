@@ -8,6 +8,11 @@
 
     ${mainHeader}
 
+    <script type="text/javascript" src="../../static/common/js/motech.min.js" />"></script>
+    <script type="text/javascript" src="resources/js/app.js"></script>
+    <script type="text/javascript" src="resources/js/controllers.js"></script>
+
+
 </head>
 <body class="body-down" ng-controller="MotechMasterCtrl" ng-init="getLoginViewData()">
     <div class="splash login" ng-hide="ready">
