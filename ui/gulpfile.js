@@ -19,8 +19,8 @@ gulp.task('js', function () {
         .pipe(sourcemaps.init())
           .pipe(concat('motech.js'))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest('build/js'))
+        .pipe(gulp.dest('build/assets/js'))
         .pipe(uglify())
         .pipe(rename('motech.min.js'))
-        .pipe(gulp.dest('build/js'));
+        .pipe(gulp.dest('build/assets/js'));
 });
