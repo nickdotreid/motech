@@ -55,5 +55,14 @@
   },
   "resolutions": {
     "jquery": "1.11.3"
+  },
+  "overrides": {
+    "angular-ui": {
+      "main": [
+        "./build/angular-ui.js",
+        "./build/angular-ui-ieshiv.js",
+        "./build/angular-ui.css"
+        ]
+    }
   }
 }
