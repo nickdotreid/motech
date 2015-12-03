@@ -19,7 +19,7 @@
   "dependencies": {
     "jquery": "1.11.3",
     "angular": "~1.4.8",
-    "bootstrap": "~3.3.6",
+    "bootstrap": "https://github.com/angular-ui/bootstrap",
     "highlight": "~9.0.0",
     "jquery-cron": "~0.1.4",
     "moment": "~2.10.6",
@@ -44,7 +44,13 @@
     "jquery.sidebar": "*",
     "jQuery-slideto": "https://github.com/Sleavely/jQuery-slideto",
     "jquerytools": "https://github.com/jquerytools/jquerytools",
-    "jquery-gentleSelect": "https://github.com/shawnchin/jquery-gentleSelect"
+    "jquery-gentleSelect": "https://github.com/shawnchin/jquery-gentleSelect",
+    "loadOnDemand": "https://github.com/AndyGrom/loadOnDemand",
+    "angular-cookies": "~1.4.8",
+    "angular-resource": "~1.4.8",
+    "angular-route": "~1.4.8",
+    "angular-sanitize": "~1.4.8",
+    "angular-ui": "~0.4.0"
   },
   "resolutions": {
     "jquery": "1.11.3"
