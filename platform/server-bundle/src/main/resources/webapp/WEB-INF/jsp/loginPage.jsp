@@ -10,6 +10,7 @@
 
     <script type="text/javascript" src="../../static/common/js/motech.min.js" />"></script>
     <script type="text/javascript" src="resources/js/app.js"></script>
+    <script type="text/javascript" src="resources/js/services.js"></script>
     <script type="text/javascript" src="resources/js/controllers.js"></script>
 
 
