@@ -51,7 +51,8 @@
     "angular-route": "~1.4.8",
     "angular-sanitize": "~1.4.8",
     "angular-ui": "~0.4.0",
-    "font-awesome": "~4.5.0"
+    "font-awesome": "~4.5.0",
+    "jqGrid": "jqgrid#~5.0.1"
   },
   "resolutions": {
     "jquery": "1.11.3"
@@ -66,6 +67,9 @@
     },
     "loadOnDemand": {
       "main": "./loadOnDemand.js"
+    },
+    "livequery": {
+      "main": "./jquery.livequery.js"
     }
   }
 }
