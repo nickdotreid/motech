@@ -67,7 +67,7 @@
                         <div class="box-content clearfix" ng-cloak>
                             <div class="well3">
                                 <div ng-if="loginViewData.loginMode.repository">
-                                    <form action="{{loginViewData.contextPath}}" method="POST" class="inside form-horizontal">
+                                    <form action="{{loginContextPath}}" method="POST" class="inside form-horizontal">
                                         <div class="form-group">
                                             <h4>
                                                 {{msg('security.signInWithId')}}
@@ -92,7 +92,7 @@
                                 </div>
                                 <div ui-if="loginViewData.loginMode.openId" ng-cloak>
                                     <div class="clearfix"></div>
-                                    <form class="inside form-horizontal" action="{{loginViewData.contextPath}}" method="POST">
+                                    <form class="inside form-horizontal" action="{{loginContextPathOpenId}}" method="POST">
                                         <div class="form-group open-id">
                                             <p>{{msg('security.signInWith')}} {{loginViewData.openIdProviderName}} {{msg('security.users')}}&nbsp;&nbsp;</p>
                                             <input name="openid_identifier" type="hidden" value="{{loginViewData.openIdProviderUrl}}"/>
