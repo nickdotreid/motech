@@ -45,7 +45,6 @@
     "jQuery-slideto": "git://github.com/Sleavely/jQuery-slideto",
     "jquerytools": "git://github.com/jquerytools/jquerytools",
     "jquery-gentleSelect": "git://github.com/shawnchin/jquery-gentleSelect",
-    "loadOnDemand": "git://github.com/AndyGrom/loadOnDemand.git",
     "angular-cookies": "~1.4.8",
     "angular-resource": "~1.4.8",
     "angular-route": "~1.4.8",
