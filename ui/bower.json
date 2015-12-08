@@ -19,7 +19,7 @@
   "dependencies": {
     "jquery": "1.11.3",
     "angular": "~1.4.8",
-    "bootstrap": "git://github.com/angular-ui/bootstrap",
+    "bootstrap": "~3.3.6",
     "highlight": "~9.0.0",
     "jquery-cron": "~0.1.4",
     "moment": "~2.10.6",
@@ -70,6 +70,12 @@
     },
     "livequery": {
       "main": "./jquery.livequery.js"
+    },
+    "bootstrap": {
+      "main": [
+        "./dist/css/bootstrap.css",
+        "./dist/js/bootstrap.js"
+        ]
     }
   }
 }
