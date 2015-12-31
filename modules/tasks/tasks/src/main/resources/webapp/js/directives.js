@@ -207,6 +207,17 @@
         };
     });
 
+    directives.directive('field', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope:{
+                field: "="
+            },
+            templateUrl: '../tasks/partials/field.html'
+        }
+    });
+
     directives.directive('draggable', function () {
         return {
             restrict: 'A',
