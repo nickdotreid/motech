@@ -222,7 +222,9 @@
         return {
             restrict: 'A',
             link: function (scope, element, attrs) {
-                element.draggable({
+                element
+                  .data('value', scope.field)
+                  .draggable({
                     revert: true,
                     start: function () {
                         if (element.hasClass('draggable')) {
@@ -244,12 +246,11 @@
             link: function (scope, element, attrs) {
                 element.droppable({
                     drop: function (event, ui) {
-                        var parameter = angular.element(ui.draggable).scope().i;
-
+                        var field = ui.draggable.data('value');
                         // format parameter string
-                        var parameterString = "{{"+parameter.eventKey+"}}";
+                        var fieldString = ManageTaskUtils.formatField(field);
                         // add string to element value
-                        element.append(parameterString);
+                        element.append(fieldString);
 
                         scope.$digest();
                         scope.$apply();
