@@ -42,6 +42,15 @@
                         ]
                     }
                 },
+            formatField: function (field) {
+                if(!field){
+                    return "{{null}}";
+                }
+                if (!field.prefix) {
+                    return "{{" + field.eventKey + "}}"
+                }
+                return "{{" + field.prefix + "." + field.eventKey + "}}";
+            },
             find: function (data) {
                 var where = (data && data.where) || [],
                     unique = (data && data.unique === false) ? false : true,

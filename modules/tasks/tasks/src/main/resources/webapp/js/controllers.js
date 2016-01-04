@@ -1116,7 +1116,7 @@
                 }
 
                 angular.forEach(action.actionParameters, function (param) {
-                    $scope.task.actions[idx].values[param.key] = $scope.addDoubleBrackets($scope.util.convertToServer($scope, param.value));
+                    $scope.task.actions[idx].values[param.key] = param.value; // This is what we are aiming for
 
                     if (!param.required && isBlank($scope.task.actions[idx].values[param.key])) {
                         delete $scope.task.actions[idx].values[param.key];
@@ -1390,6 +1390,23 @@
                 return message;
             }
         };
+
+        $scope.getAvailableFields = function () {
+            var fields = [];
+            if($scope.selectedTrigger) {
+                $scope.selectedTrigger.eventParameters.forEach(function (field) {
+                    field.prefix = "trigger"; // Don't think this belongs here...
+                    fields.push(field);
+                });
+            }
+            $scope.getDataSources().forEach(function (service) {
+                $scope.findObject(service.providerId, service.type).fields.forEach(function (field) {
+                    field.prefix = "ad"; // again, I don't think this belongs here...
+                    fields.push(field);
+                });
+            });
+            return fields;
+        }
     });
 
     controllers.controller('TasksLogCtrl', function ($scope, Tasks, Activities, $routeParams, $filter) {

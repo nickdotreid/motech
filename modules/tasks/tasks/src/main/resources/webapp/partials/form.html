@@ -228,13 +228,9 @@
                                         <div class="form-group control-section">
                                             <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
                                             <div class="form-inline col-md-10 col-sm-9 move-element">
-                                                <span contenteditable="false" ng-repeat="i in selectedTrigger.eventParameters" class="badge badge-info triggerField" draggable data-prefix="trigger" data-index="{{$index}}" data-type="{{i.type}}" data-eventkey="{{i.eventKey}}">{{taskMsg(i.displayName)}}</span>​
+                                                <field ng-repeat="i in selectedTrigger.eventParameters" field="i" draggable />​
                                                 <span ng-repeat="ds in getDataSources() | idLessThan:step.objectId">
-                                                    <span contenteditable="false" ng-repeat="i in findObject(ds.providerId, ds.type).fields" class="badge badge-warning triggerField" draggable
-                                                          data-prefix="ad" data-source="{{ds.providerName}}" data-object="{{ds.displayName}}" data-object-type="{{ds.type}}"
-                                                          data-field="{{i.fieldKey}}" data-index="{{$index}}" data-object-id="{{ds.objectId}}" data-type="{{i.type}}">
-                                                        {{taskMsg(ds.providerName)}}.{{taskMsg(ds.displayName)}}#{{ds.objectId}}.{{taskMsg(i.displayName)}}
-                                                    </span>
+                                                    <field ng-repeat="i in findObject(ds.providerId, ds.type).fields" draggable />
                                                 </span>
                                             </div>
                                         </div>
@@ -323,7 +319,7 @@
                                         <div class="form-group margin-before3 control-section" ng-hide="step.displayName == undefined">
                                             <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.subsubsection.objectFields')}}</label>
                                             <div class="form-inline col-md-10 col-sm-9 move-element">
-                                                <span ng-repeat="field in findObject(step.providerId, step.type).fields" class="badge badge-warning">{{taskMsg(field.displayName)}}</span>​
+                                                <field ng-repeat="field in findObject(step.providerId, step.type).fields" class="badge badge-warning">{{taskMsg(field.displayName)}}</field>​
                                             </div>
                                         </div>
                                     </div>
@@ -363,14 +359,7 @@
                                     <div class="form-group control-section">
                                         <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
                                         <div class="form-inline col-md-10 col-sm-9 move-element">
-                                            <span contenteditable="false" ng-repeat="i in selectedTrigger.eventParameters" class="badge badge-info triggerField" draggable data-prefix="trigger" data-index="{{$index}}" data-type="{{i.type}}" data-eventkey="{{i.eventKey}}">{{taskMsg(i.displayName)}}</span>​
-                                            <span ng-repeat="ds in getDataSources()">
-                                                <span contenteditable="false" ng-repeat="i in findObject(ds.providerId, ds.type).fields" class="badge badge-warning triggerField" draggable
-                                                      data-prefix="ad" data-source="{{ds.providerName}}" data-object="{{ds.displayName}}" data-object-type="{{ds.type}}"
-                                                      data-field="{{i.fieldKey}}" data-index="{{$index}}" data-object-id="{{ds.objectId}}" data-type="{{i.type}}">
-                                                    {{taskMsg(ds.providerName)}}.{{taskMsg(ds.displayName)}}#{{ds.objectId}}.{{taskMsg(i.displayName)}}
-                                                </span>
-                                            </span>
+                                            <field ng-repeat="field in getAvailableFields() track by field.id" field="field" draggable />
                                         </div>
                                     </div>
 

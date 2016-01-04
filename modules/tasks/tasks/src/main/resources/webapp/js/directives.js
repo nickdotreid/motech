@@ -207,11 +207,24 @@
         };
     });
 
+    directives.directive('field', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope:{
+                field: "="
+            },
+            templateUrl: '../tasks/partials/field.html'
+        }
+    });
+
     directives.directive('draggable', function () {
         return {
             restrict: 'A',
             link: function (scope, element, attrs) {
-                element.draggable({
+                element
+                  .data('value', scope.field)
+                  .draggable({
                     revert: true,
                     start: function () {
                         if (element.hasClass('draggable')) {
@@ -233,123 +246,13 @@
             link: function (scope, element, attrs) {
                 element.droppable({
                     drop: function (event, ui) {
-                        var parent = scope, value, eventKey, dragElement, browser, emText, dataSource, removeButton,
-                            position = function (dropElement, dragElement) {
-                                var sel, range, space = document.createTextNode(''), el, frag, node, lastNode, rangeInDropElem;
+                        var field = ui.draggable.data('value');
+                        // format parameter string
+                        var fieldString = ManageTaskUtils.formatField(field);
+                        // add string to element value
+                        element.append(fieldString);
 
-                                if (window.getSelection) {
-                                    sel = window.getSelection();
-
-                                    if (sel.getRangeAt && sel.rangeCount && sel.anchorNode.parentNode.tagName.toLowerCase() !== 'span') {
-                                        range = sel.getRangeAt(0);
-                                        rangeInDropElem = range.commonAncestorContainer.parentNode === dropElement[0] || range.commonAncestorContainer === dropElement[0] || range.commonAncestorContainer.parentNode.parentNode === dropElement[0];
-                                    } else {
-                                        rangeInDropElem = false;
-                                    }
-
-                                    if (rangeInDropElem) {
-                                        el = document.createElement("div");
-                                        el.innerHTML = dragElement[0].outerHTML;
-
-                                        frag = document.createDocumentFragment();
-
-                                        while ((node = el.firstChild) !== null) {
-                                            lastNode = frag.appendChild(node);
-                                        }
-
-                                        $compile(frag)(scope);
-                                        range.insertNode(frag);
-                                        range.insertNode(space);
-
-                                        if (lastNode) {
-                                            range = range.cloneRange();
-                                            range.setStartAfter(lastNode);
-                                            range.collapse(true);
-                                            sel.removeAllRanges();
-                                            sel.addRange(range);
-                                        }
-                                    } else {
-                                        $compile(dragElement)(scope);
-                                        dropElement.append(dragElement);
-                                        dropElement.append(space);
-                                    }
-                                } else if (document.selection && document.selection.type !== "Control") {
-                                    document.selection.createRange().pasteHTML($compile(dragElement[0].outerHTML)(scope));
-                                }
-                            };
-
-                        while (parent.task === undefined) {
-                            parent = parent.$parent;
-                        }
-
-                        dragElement = angular.element(ui.draggable);
-                        browser = parent.BrowserDetect.browser;
-
-                        if (dragElement.hasClass('triggerField')) {
-                            switch (element.data('type')) {
-                            case 'DATE': emText = 'task.placeholder.dateOnly'; break;
-                            case 'TIME': emText = 'task.placeholder.timeOnly'; break;
-                            case 'BOOLEAN': emText = 'task.placeholder.booleanOnly'; break;
-                            default:
-                            }
-
-                            if (element.data('type') === 'MAP') {
-                                scope.ngModel = eventKey;
-                            }
-
-                            if (!(dragElement.data('popover') === 'no' && element.data('type') !== 'format')){
-                                if (emText !== undefined) {
-                                    element.empty();
-                                    element.append('<em style="color: gray;">' + parent.msg(emText) + '</em>');
-                                }
-
-                                element.find('em').remove();
-
-                                dragElement = dragElement.clone();
-                                dragElement.css("position", "relative");
-                                dragElement.css("left", "0px");
-                                dragElement.css("top", "0px");
-                                dragElement.css("width", "auto");
-                                dragElement.attr("unselectable", "on");
-
-                                // Adding remove button to the dragged bean
-                                dragElement.append(" &nbsp;");
-                                dragElement.append(" &nbsp;");
-                                removeButton = $('<button/>', {
-                                        text: 'x',
-                                        type: 'button'
-                                });
-                                removeButton.addClass('close');
-                                removeButton.addClass('badge-close');
-                                dragElement.append(removeButton);
-
-                                if ((dragElement.data('type') !== 'INTEGER' || dragElement.data('type') !== 'DOUBLE') && dragElement.data('popover') !== 'no') {
-                                    if (dragElement.data('type') === 'UNICODE' || dragElement.data('type') === 'TEXTAREA') {
-                                        dragElement.attr("manipulationpopover", "STRING");
-                                    } else if (dragElement.data('type') === 'DATE') {
-                                        if (element.data('type') === 'DATE') {
-                                            dragElement.attr("manipulationpopover", "DATE2DATE");
-                                        } else {
-                                            dragElement.attr("manipulationpopover", "DATE");
-                                        }
-                                    } else {
-                                        dragElement.attr("manipulationpopover", "NONE");
-                                    }
-                                } else {
-                                    dragElement.attr("manipulationpopover", "NONE");
-                                }
-
-                                dragElement.addClass('pointer');
-                                dragElement.addClass('popoverEvent');
-                                dragElement.addClass('nonEditable');
-                                dragElement.removeAttr("ng-repeat");
-                                dragElement.removeAttr("draggable");
-
-                                position(element, dragElement);
-                            }
-                        }
-
-                        parent.$digest();
+                        scope.$digest();
                         scope.$apply();
                     }
                 });
