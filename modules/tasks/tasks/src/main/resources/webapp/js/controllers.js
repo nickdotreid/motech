@@ -1400,7 +1400,9 @@
                 });
             }
             $scope.getDataSources().forEach(function (service) {
-                $scope.findObject(service.providerId, service.type).fields.forEach(function (field) {
+                var serviceObj = $scope.findObject(service.providerId, service.type);
+                if (!serviceObj.fields) return false;
+                serviceObj.fields.forEach(function (field) {
                     field.prefix = "ad"; // again, I don't think this belongs here...
                     fields.push(field);
                 });
