@@ -240,18 +240,18 @@
     directives.directive('droppable', function (ManageTaskUtils, $compile) {
         return {
             restrict: 'A',
-            scope: {
-              ngModel : '='
-            },
-            link: function (scope, element, attrs) {
+            require: '?ngModel',
+            link: function (scope, element, attrs, ngModel) {
                 element.droppable({
                     drop: function (event, ui) {
                         var field = ui.draggable.data('value');
                         // format parameter string
                         var fieldString = ManageTaskUtils.formatField(field);
-                        // add string to element value
-                        element.append(fieldString);
-
+                        if(ngModel.$viewValue) {
+                            ngModel.$setViewValue(ngModel.$viewValue + fieldString);
+                        } else {
+                            ngModel.$setViewValue(fieldString);
+                        }
                         scope.$digest();
                         scope.$apply();
                     }
@@ -304,76 +304,52 @@
             restrict: 'A',
             require: '?ngModel',
             link: function (scope, element, attrs, ngModel) {
-                var read = function () {
-                    var container = $('<div></div>');
-                    if (element.html() === "<br>") {
-                        element.find('br').remove();
-                    }
-                    container.html($.trim(element.html()));
-                    container.find('.editable').attr('contenteditable', false);
-                    container.find('.popover').remove();
-                    ngModel.$setViewValue(container.html());
-                    scope.$apply();
-                };
+                if (!ngModel) return;
 
-                if (!ngModel) {
-                    return;
-                }
+                var readThrottle, read = function () {
+                    var container = $('<div></div>');
+                    element.contents().each(function(){
+                        if(false){ // if its a field element
+
+                        }else{
+                            container.append($(this).text());
+                        }
+                    });
+                    ngModel.$setViewValue(container.text());
+
+                    if(readThrottle) clearTimeout(readThrottle);
+                    readThrottle = setTimeout(function() {
+                        scope.$apply();
+                    }, 500);
+                };
 
                 ngModel.$render = function () {
-                    var container = $('<div></div>');
-                    container.html(ngModel.$viewValue);
-                    container.find('.editable').attr('contenteditable', true);
-
-                    if (container.text() !== "") {
-                        container = container.contents();
-                        container.each(function () {
-                            if (this.localName === 'span') {
-                                return $compile(this)(scope);
+                    element.html("");
+                    if(!ngModel.$viewValue) return;
+                    var viewValueStr = ngModel.$viewValue; // copy becuase we are destructive with the value
+                    var matches = viewValueStr.match(/{{[^{{]+}}/gi);
+                    if(matches){
+                        matches.forEach(function(match){
+                            var matchStart = viewValueStr.indexOf(match);
+                            if(matchStart > 0){
+                                element.append(viewValueStr.substring(0, matchStart));
                             }
-                        });
-                    } else {
-                        container = container.html();
-                    }
+                            var field = {displayName:viewValueStr.substr(matchStart, match.length)};
+                            var fieldScope = scope.$parent.$new();
+                            fieldScope.field = field;
+                            var matchElement = $compile('<field field="field" />')(fieldScope);
+                            element.append(matchElement);
 
-                    return element.html(container);
+                            viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
+                        });
+                    }
+                    element.append(viewValueStr);
                 };
 
-                element.on('focusin', function (event) {
-                    var el = this;
-
-                    event.stopPropagation();
-
-                    window.setTimeout(function () {
-                        var sel, range;
-                        if (window.getSelection && document.createRange) {
-                            range = document.createRange();
-                            range.selectNodeContents(el);
-
-                            if (el.childNodes.length !== 0) {
-                                range.setStartAfter(el.childNodes[el.childNodes.length - 1]);
-                            }
-
-                            range.collapse(true);
-
-                            sel = window.getSelection();
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        } else if (document.body.createTextRange) {
-                            range = document.body.createTextRange();
-
-                            if (el.childNodes.length !== 0) {
-                                range.moveToElementText(el.childNodes[el.childNodes.length - 1]);
-                            }
-
-                            range.collapse(true);
-                            range.select();
-                        }
-                    }, 1);
-
-                    if (ngModel.$viewValue !== $.trim(element.html())) {
-                        return scope.$eval(read);
-                    }
+                scope.$watch(function () {
+                    return ngModel.$viewValue;
+                }, function(){
+                    ngModel.$render();
                 });
 
                 element.on('keypress', function (event) {
@@ -384,11 +360,9 @@
                     }
                 });
 
-                element.bind('blur keyup change mouseleave', function (event) {
+                element.bind('blur keyup change', function (event) {
                     event.stopPropagation();
-                    if (ngModel.$viewValue !== $.trim(element.html())) {
-                        return scope.$eval(read);
-                    }
+                    return scope.$eval(read);
                 });
 
                 return read;
