@@ -1395,7 +1395,7 @@
             var fields = [];
             if($scope.selectedTrigger) {
                 $scope.selectedTrigger.eventParameters.forEach(function (field) {
-                    field.prefix = "trigger"; // Don't think this belongs here...
+                    field.prefix = ManageTaskUtils.TRIGGER_PREFIX;
                     fields.push(field);
                 });
             }
@@ -1403,7 +1403,7 @@
                 var serviceObj = $scope.findObject(service.providerId, service.type);
                 if (!serviceObj.fields) return false;
                 serviceObj.fields.forEach(function (field) {
-                    field.prefix = "ad";
+                    field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
                     field.providerName = service.providerName;
                     field.objectId = serviceObj.id;
                     fields.push(field);
