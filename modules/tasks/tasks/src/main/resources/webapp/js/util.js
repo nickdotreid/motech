@@ -43,13 +43,20 @@
                     }
                 },
             formatField: function (field) {
-                if(!field){
-                    return "{{null}}";
-                }
-                if (!field.prefix) {
-                    return "{{" + field.eventKey + "}}"
-                }
-                return "{{" + field.prefix + "." + field.eventKey + "}}";
+                if(!field) return "";
+                var parts = [], nameArr = [];
+                if (field.prefix) nameArr.push(field.prefix);
+                if (field.providerName) nameArr.push(field.providerName);
+                if (field.type) nameArr.push(field.type);
+                if (field.eventKey) nameArr.push(field.eventKey);
+                parts.push(nameArr.join("."));
+
+                var hashArr = [];
+                if (field.objectId) hashArr.push(field.objectId);
+                if (field.fieldKey) hashArr.push(field.fieldKey);
+                parts.push(hashArr.join("."));
+
+                return "{{" + parts.join("#") + "}}";
             },
             find: function (data) {
                 var where = (data && data.where) || [],

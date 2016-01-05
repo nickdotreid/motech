@@ -1403,7 +1403,9 @@
                 var serviceObj = $scope.findObject(service.providerId, service.type);
                 if (!serviceObj.fields) return false;
                 serviceObj.fields.forEach(function (field) {
-                    field.prefix = "ad"; // again, I don't think this belongs here...
+                    field.prefix = "ad";
+                    field.providerName = service.providerName;
+                    field.objectId = serviceObj.id;
                     fields.push(field);
                 });
             });
