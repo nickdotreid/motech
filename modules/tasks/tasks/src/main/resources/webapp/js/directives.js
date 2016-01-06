@@ -312,10 +312,11 @@
                 var readThrottle, read = function () {
                     var container = $('<div></div>');
                     element.contents().each(function(){
-                        if(false){ // if its a field element
-                            container.append(ManageTaskUtils.formatField($(this).data('value')));
+                        var ele = $(this);
+                        if(ele.attr('field')){ // if its a field element
+                            container.append(ManageTaskUtils.formatField(ele.data('value')));
                         }else{
-                            container.append($(this).text());
+                            container.append(ele.text());
                         }
                     });
                     ngModel.$setViewValue(container.text());
