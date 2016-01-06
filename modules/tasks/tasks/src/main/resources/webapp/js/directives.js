@@ -212,7 +212,8 @@
             restrict: 'E',
             replace: true,
             scope:{
-                field: "="
+                field: "=",
+                editable: "="
             },
             templateUrl: '../tasks/partials/field.html'
         }
@@ -337,7 +338,7 @@
                             var field = {displayName:viewValueStr.substr(matchStart, match.length)};
                             var fieldScope = scope.$parent.$new();
                             fieldScope.field = field;
-                            var matchElement = $compile('<field field="field" />')(fieldScope);
+                            var matchElement = $compile('<field field="field" editable />')(fieldScope);
                             element.append(matchElement);
 
                             viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
