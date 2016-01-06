@@ -207,13 +207,16 @@
         };
     });
 
-    directives.directive('field', function () {
+    directives.directive('field', function (ManageTaskUtils) {
         return {
             restrict: 'E',
             replace: true,
             scope:{
                 field: "=",
                 editable: "="
+            },
+            link: function (scope, element, attrs) {
+                element.data('value', scope.field);
             },
             templateUrl: '../tasks/partials/field.html'
         }
@@ -224,7 +227,6 @@
             restrict: 'A',
             link: function (scope, element, attrs) {
                 element
-                  .data('value', scope.field)
                   .draggable({
                     revert: true,
                     start: function () {
@@ -300,7 +302,7 @@
         };
     });
 
-    directives.directive('contenteditable', function ($compile) {
+    directives.directive('contenteditable', function ($compile, ManageTaskUtils) {
         return {
             restrict: 'A',
             require: '?ngModel',
@@ -311,7 +313,7 @@
                     var container = $('<div></div>');
                     element.contents().each(function(){
                         if(false){ // if its a field element
-
+                            container.append(ManageTaskUtils.formatField($(this).data('value')));
                         }else{
                             container.append($(this).text());
                         }
