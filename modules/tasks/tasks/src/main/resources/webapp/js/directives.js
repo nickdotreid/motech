@@ -278,8 +278,6 @@
                 // should be functions stuck to the scope or element...
                 element.data('value', scope.field);
                 element.data('text', scope.fieldString);
-
-                if (scope.editable) element.contenteditable = false;
             },
             templateUrl: '../tasks/partials/field.html'
         }
