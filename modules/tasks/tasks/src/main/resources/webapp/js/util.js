@@ -8,40 +8,95 @@
             TRIGGER_PREFIX: 'trigger',
             DATA_SOURCE_PREFIX: 'ad',
             FILTER_OPERATORS: {
-                    'task.string': {
-                        'type': 'UNICODE',
-                        'options': [
-                            'task.exist',
-                            'task.equals',
-                            'task.contains',
-                            'task.startsWith',
-                            'task.endsWith',
-                            'task.equalsIgnoreCase'
-                        ]
-                    },
-                    'task.number': {
-                        'type': 'DOUBLE',
-                        'options': [
-                            'task.exist',
-                            'task.number.equals',
-                            'task.gt',
-                            'task.lt'
-                        ]
-                    },
-                    'task.date': {
-                        'type': 'DATE',
-                        'options': [
-                            'task.exist',
-                            'task.equals',
-                            'task.after',
-                            'task.afterNow',
-                            'task.before',
-                            'task.beforeNow',
-                            'task.lessDaysFromNow',
-                            'task.moreDaysFromNow'
-                        ]
-                    }
+                'task.string': {
+                    'type': 'UNICODE',
+                    'options': [
+                        'task.exist',
+                        'task.equals',
+                        'task.contains',
+                        'task.startsWith',
+                        'task.endsWith',
+                        'task.equalsIgnoreCase'
+                    ]
                 },
+                'task.number': {
+                    'type': 'DOUBLE',
+                    'options': [
+                        'task.exist',
+                        'task.number.equals',
+                        'task.gt',
+                        'task.lt'
+                    ]
+                },
+                'task.date': {
+                    'type': 'DATE',
+                    'options': [
+                        'task.exist',
+                        'task.equals',
+                        'task.after',
+                        'task.afterNow',
+                        'task.before',
+                        'task.beforeNow',
+                        'task.lessDaysFromNow',
+                        'task.moreDaysFromNow'
+                    ]
+                }
+            },
+            formatField: function (field) {
+                if(!field) return "";
+                var parts = [], nameArr = [];
+                if (field.prefix) nameArr.push(field.prefix);
+                if (field.providerName) nameArr.push(field.providerName);
+                if (field.providerType) nameArr.push(field.providerType);
+                if (field.eventKey) nameArr.push(field.eventKey);
+                parts.push(nameArr.join("."));
+
+                var hashArr = [];
+                if (field.objectId) hashArr.push(field.objectId);
+                if (field.fieldKey) hashArr.push(field.fieldKey);
+                if(hashArr.length > 0) parts.push(hashArr.join("."));
+
+                return "{{" + parts.join("#") + "}}";
+            },
+            parseField: function (str) {
+                if(!str) return false;
+                // Remove formatting (if present)
+                if(str.substring(0,2)=='{{') str = str.substring(2,str.length);
+                if(str.substr(-2,2)=='}}') str = str.substr(0,str.length-2);
+
+                var modifiers = str.split('?');
+                str = modifiers.shift();
+
+                var field = {};
+                field.displayName = str;
+                if (str.indexOf('trigger')==0) {
+                    var parts = str.split(".");
+                    field.prefix = parts[0];
+                    field.eventKey = parts[1];
+                }
+                if (str.indexOf('ad')==0) {
+                    str.split("#").forEach( function(part, index){
+                        var parts = part.split('.');
+                        if(index===0){
+                            field.prefix = parts.shift();
+                            field.providerType = parts.pop();
+                            if(parts.length > 0){
+                                field.providerName = parts.join(".");
+                            }
+                        }else if(index===1) {
+                            field.objectId = parts.shift();
+                            field.fieldKey = parts.shift();
+                        }
+                    });
+                }
+
+                // find existing field information (if exists/loaded)
+
+                modifiers.forEach(function () {
+                    this; // parse and add
+                });
+                return field;
+            },
             find: function (data) {
                 var where = (data && data.where) || [],
                     unique = (data && data.unique === false) ? false : true,
