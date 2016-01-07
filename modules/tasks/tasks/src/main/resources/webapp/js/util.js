@@ -58,8 +58,9 @@
 
                 return "{{" + parts.join("#") + "}}";
             },
-            parseField: function (str) {
+            parseField: function (str, existingFields) {
                 if(!str) return false;
+                if(!existingFields || !Array.isArray(existingFields)) existingFields=[];
                 // Remove formatting (if present)
                 if(str.substring(0,2)=='{{') str = str.substring(2,str.length);
                 if(str.substr(-2,2)=='}}') str = str.substr(0,str.length-2);
@@ -73,6 +74,12 @@
                     var parts = str.split(".");
                     field.prefix = parts[0];
                     field.eventKey = parts[1];
+
+                    existingFields.forEach(function (exField) {
+                        if(exField.prefix == 'trigger' && exField.eventKey == field.eventKey){
+                            field = exField;
+                        }
+                    });
                 }
                 if (str.indexOf('ad')==0) {
                     str.split("#").forEach( function(part, index){
@@ -88,9 +95,12 @@
                             field.fieldKey = parts.shift();
                         }
                     });
+                    existingFields.forEach(function (exField) {
+                        if(exField.prefix == 'ad' && exField.providerType == field.providerType && exField.providerName == field.providerName && exField.objectId == field.objectId && exField.fieldKey == field.fieldKey){
+                            field = exField;
+                        }
+                    });
                 }
-
-                // find existing field information (if exists/loaded)
 
                 modifiers.forEach(function () {
                     this; // parse and add

@@ -217,7 +217,7 @@
                 editable: "=?"
             },
             link: function (scope, element, attrs) {
-                if (scope.fieldString && !scope.field) scope.field = ManageTaskUtils.parseField(scope.fieldString);
+                if (scope.fieldString && !scope.field) scope.field = ManageTaskUtils.parseField(scope.fieldString, scope.$parent.getAvailableFields());
                 if (scope.field && !scope.fieldString) scope.fieldString = ManageTaskUtils.formatField(scope.field);
 
                 // should be functions stuck to the scope or element...
