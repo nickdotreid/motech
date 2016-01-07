@@ -42,22 +42,6 @@
                         ]
                     }
                 },
-            formatField: function (field) {
-                if(!field) return "";
-                var parts = [], nameArr = [];
-                if (field.prefix) nameArr.push(field.prefix);
-                if (field.providerName) nameArr.push(field.providerName);
-                if (field.providerType) nameArr.push(field.providerType);
-                if (field.eventKey) nameArr.push(field.eventKey);
-                parts.push(nameArr.join("."));
-
-                var hashArr = [];
-                if (field.objectId) hashArr.push(field.objectId);
-                if (field.fieldKey) hashArr.push(field.fieldKey);
-                if(hashArr.length > 0) parts.push(hashArr.join("."));
-
-                return "{{" + parts.join("#") + "}}";
-            },
             find: function (data) {
                 var where = (data && data.where) || [],
                     unique = (data && data.unique === false) ? false : true,

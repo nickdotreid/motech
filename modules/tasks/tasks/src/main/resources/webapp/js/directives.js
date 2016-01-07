@@ -208,15 +208,64 @@
     });
 
     directives.directive('field', function (ManageTaskUtils) {
+        var formatField = function (field) {
+            if(!field) return "";
+            var parts = [], nameArr = [];
+            if (field.prefix) nameArr.push(field.prefix);
+            if (field.providerName) nameArr.push(field.providerName);
+            if (field.providerType) nameArr.push(field.providerType);
+            if (field.eventKey) nameArr.push(field.eventKey);
+            parts.push(nameArr.join("."));
+
+            var hashArr = [];
+            if (field.objectId) hashArr.push(field.objectId);
+            if (field.fieldKey) hashArr.push(field.fieldKey);
+            if(hashArr.length > 0) parts.push(hashArr.join("."));
+
+            return "{{" + parts.join("#") + "}}";
+        }
+        var parseField = function (str) {
+            if(!str) return false;
+            // Remove formatting (if present)
+            if(str.substring(0,2)=='{{') str = str.substring(2,str.length);
+            if(str.substr(-2,2)=='}}') str = str.substr(0,str.length-2);
+
+            var modifiers = str.split('?');
+            str = modifiers.shift();
+
+            var field = {};
+            field.displayName = str;
+            if (str.indexOf('trigger')==0) {
+                // parse trigger
+            }
+            if (str.indexOf('ad')==0) {
+                // parse ad
+            }
+
+            // find existing field information (if exists/loaded)
+
+            modifiers.forEach(function () {
+                this; // parse and add
+            });
+            return field;
+        }
         return {
             restrict: 'E',
             replace: true,
             scope:{
-                field: "=",
-                editable: "="
+                field: "=?",
+                fieldString: "=?",
+                editable: "=?"
             },
             link: function (scope, element, attrs) {
+                if (scope.fieldString && !scope.field) scope.field = parseField(scope.fieldString);
+                if (scope.field && !scope.fieldString) scope.fieldString = formatField(scope.field);
+
+                // should be functions stuck to the scope or element...
                 element.data('value', scope.field);
+                element.data('text', formatField(scope.fieldString));
+
+                if (scope.editable) element.contenteditable = false;
             },
             templateUrl: '../tasks/partials/field.html'
         }
@@ -247,9 +296,7 @@
             link: function (scope, element, attrs, ngModel) {
                 element.droppable({
                     drop: function (event, ui) {
-                        var field = ui.draggable.data('value');
-                        // format parameter string
-                        var fieldString = ManageTaskUtils.formatField(field);
+                        var fieldString = ui.draggable.data('text'); // would be cool if it
                         if(ngModel.$viewValue) {
                             ngModel.$setViewValue(ngModel.$viewValue + fieldString);
                         } else {
@@ -302,7 +349,7 @@
         };
     });
 
-    directives.directive('contenteditable', function ($compile, ManageTaskUtils) {
+    directives.directive('contenteditable', function ($compile) {
         return {
             restrict: 'A',
             require: '?ngModel',
@@ -314,7 +361,7 @@
                     element.contents().each(function(){
                         var ele = $(this);
                         if(ele.attr('field')){ // if its a field element
-                            container.append(ManageTaskUtils.formatField(ele.data('value')));
+                            container.append(ele.data('text'));
                         }else{
                             container.append(ele.text());
                         }
@@ -338,10 +385,9 @@
                             if(matchStart > 0){
                                 element.append(viewValueStr.substring(0, matchStart));
                             }
-                            var field = {displayName:viewValueStr.substr(matchStart, match.length)};
                             var fieldScope = scope.$parent.$new();
-                            fieldScope.field = field;
-                            var matchElement = $compile('<field field="field" editable />')(fieldScope);
+                            fieldScope.fieldString = viewValueStr.substr(matchStart, match.length);
+                            var matchElement = $compile('<field field-string="fieldString" editable />')(fieldScope);
                             element.append(matchElement);
 
                             viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
