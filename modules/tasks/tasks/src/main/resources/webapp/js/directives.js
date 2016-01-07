@@ -236,10 +236,24 @@
             var field = {};
             field.displayName = str;
             if (str.indexOf('trigger')==0) {
-                // parse trigger
+                var parts = str.split(".");
+                field.prefix = parts[0];
+                field.eventKey = parts[1];
             }
             if (str.indexOf('ad')==0) {
-                // parse ad
+                str.split("#").forEach( function(part, index){
+                    var parts = part.split('.');
+                    if(index===0){
+                        field.prefix = parts.shift();
+                        field.providerType = parts.pop();
+                        if(parts.length > 0){
+                            field.providerName = parts.join(".");
+                        }
+                    }else if(index===1) {
+                        field.objectId = parts.shift();
+                        field.fieldKey = parts.shift();
+                    }
+                });
             }
 
             // find existing field information (if exists/loaded)
@@ -263,7 +277,7 @@
 
                 // should be functions stuck to the scope or element...
                 element.data('value', scope.field);
-                element.data('text', formatField(scope.fieldString));
+                element.data('text', scope.fieldString);
 
                 if (scope.editable) element.contenteditable = false;
             },
@@ -360,7 +374,7 @@
                     var container = $('<div></div>');
                     element.contents().each(function(){
                         var ele = $(this);
-                        if(ele.attr('field')){ // if its a field element
+                        if(ele.attr('field') || ele.attr('field-string')){ // this needs to change...
                             container.append(ele.data('text'));
                         }else{
                             container.append(ele.text());
