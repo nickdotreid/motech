@@ -414,19 +414,22 @@
 
         utils.formatField = function (field) {
             if(!field) return "";
-            var parts = [], nameArr = [];
-            if (field.prefix) nameArr.push(field.prefix);
-            if (field.providerName) nameArr.push(field.providerName);
-            if (field.providerType) nameArr.push(field.providerType);
-            if (field.eventKey) nameArr.push(field.eventKey);
-            parts.push(nameArr.join("."));
+            var str = "";
 
-            var hashArr = [];
-            if (field.objectId) hashArr.push(field.objectId);
-            if (field.fieldKey) hashArr.push(field.fieldKey);
-            if(hashArr.length > 0) parts.push(hashArr.join("."));
+            switch(field.prefix){
+                case utils.TRIGGER_PREFIX:
+                    str = "{0}.{1}".format(utils.TRIGGER_PREFIX, field.eventKey);
+                    break;
+                case utils.DATA_SOURCE_PREFIX:
+                    str = "{0}.{1}.{2}#{3}.{4}".format($scope.util.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
+                    break;
+                default:
+                    str = field.displayName;
+            }
 
-            return "{{" + parts.join("#") + "}}";
+            // format manipulations...
+
+            return "{{" + str + "}}";
         }
 
         utils.parseField = function (str, existingFields) {
@@ -441,37 +444,12 @@
 
             var field = {};
             field.displayName = str;
-            if (str.indexOf('trigger')==0) {
-                var parts = str.split(".");
-                field.prefix = parts[0];
-                field.eventKey = parts[1];
 
-                existingFields.forEach(function (exField) {
-                    if(exField.prefix == 'trigger' && exField.eventKey == field.eventKey){
-                        field = exField;
-                    }
-                });
-            }
-            if (str.indexOf('ad')==0) {
-                str.split("#").forEach( function(part, index){
-                    var parts = part.split('.');
-                    if(index===0){
-                        field.prefix = parts.shift();
-                        field.providerType = parts.pop();
-                        if(parts.length > 0){
-                            field.providerName = parts.join(".");
-                        }
-                    }else if(index===1) {
-                        field.objectId = parts.shift();
-                        field.fieldKey = parts.shift();
-                    }
-                });
-                existingFields.forEach(function (exField) {
-                    if(exField.prefix == 'ad' && exField.providerType == field.providerType && exField.providerName == field.providerName && exField.objectId == field.objectId && exField.fieldKey == field.fieldKey){
-                        field = exField;
-                    }
-                });
-            }
+            existingFields.forEach(function (exField) {
+                if("{{" + str + "}}" == utils.formatField(exField)){
+                    field = exField;
+                }
+            });
 
             modifiers.forEach(function () {
                 this; // parse and add
