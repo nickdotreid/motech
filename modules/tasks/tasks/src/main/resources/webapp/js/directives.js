@@ -207,12 +207,22 @@
         };
     });
 
-    directives.directive('field', function () {
+    directives.directive('field', function (ManageTaskUtils) {
         return {
             restrict: 'E',
             replace: true,
             scope:{
-                field: "="
+                field: "=?",
+                fieldString: "=?",
+                editable: "=?"
+            },
+            link: function (scope, element, attrs) {
+                if (scope.fieldString && !scope.field) scope.field = ManageTaskUtils.parseField(scope.fieldString, scope.$parent.getAvailableFields());
+                if (scope.field && !scope.fieldString) scope.fieldString = ManageTaskUtils.formatField(scope.field);
+
+                // should be functions stuck to the scope or element...
+                element.data('value', scope.field);
+                element.data('text', scope.fieldString);
             },
             templateUrl: '../tasks/partials/field.html'
         }
@@ -223,7 +233,6 @@
             restrict: 'A',
             link: function (scope, element, attrs) {
                 element
-                  .data('value', scope.field)
                   .draggable({
                     revert: true,
                     start: function () {
@@ -240,18 +249,16 @@
     directives.directive('droppable', function (ManageTaskUtils, $compile) {
         return {
             restrict: 'A',
-            scope: {
-              ngModel : '='
-            },
-            link: function (scope, element, attrs) {
+            require: '?ngModel',
+            link: function (scope, element, attrs, ngModel) {
                 element.droppable({
                     drop: function (event, ui) {
-                        var field = ui.draggable.data('value');
-                        // format parameter string
-                        var fieldString = ManageTaskUtils.formatField(field);
-                        // add string to element value
-                        element.append(fieldString);
-
+                        var fieldString = ui.draggable.data('text'); // would be cool if it
+                        if(ngModel.$viewValue) {
+                            ngModel.$setViewValue(ngModel.$viewValue + fieldString);
+                        } else {
+                            ngModel.$setViewValue(fieldString);
+                        }
                         scope.$digest();
                         scope.$apply();
                     }
@@ -304,76 +311,52 @@
             restrict: 'A',
             require: '?ngModel',
             link: function (scope, element, attrs, ngModel) {
-                var read = function () {
-                    var container = $('<div></div>');
-                    if (element.html() === "<br>") {
-                        element.find('br').remove();
-                    }
-                    container.html($.trim(element.html()));
-                    container.find('.editable').attr('contenteditable', false);
-                    container.find('.popover').remove();
-                    ngModel.$setViewValue(container.html());
-                    scope.$apply();
-                };
+                if (!ngModel) return;
 
-                if (!ngModel) {
-                    return;
-                }
+                var readThrottle, read = function () {
+                    var container = $('<div></div>');
+                    element.contents().each(function(){
+                        var ele = $(this);
+                        if(ele.attr('field') || ele.attr('field-string')){ // this needs to change...
+                            container.append(ele.data('text'));
+                        }else{
+                            container.append(ele.text());
+                        }
+                    });
+                    ngModel.$setViewValue(container.text());
+
+                    if(readThrottle) clearTimeout(readThrottle);
+                    readThrottle = setTimeout(function() {
+                        scope.$apply();
+                    }, 500);
+                };
 
                 ngModel.$render = function () {
-                    var container = $('<div></div>');
-                    container.html(ngModel.$viewValue);
-                    container.find('.editable').attr('contenteditable', true);
-
-                    if (container.text() !== "") {
-                        container = container.contents();
-                        container.each(function () {
-                            if (this.localName === 'span') {
-                                return $compile(this)(scope);
+                    element.html("");
+                    if(!ngModel.$viewValue) return;
+                    var viewValueStr = ngModel.$viewValue; // copy becuase we are destructive with the value
+                    var matches = viewValueStr.match(/{{[^{{]+}}/gi);
+                    if(matches){
+                        matches.forEach(function(match){
+                            var matchStart = viewValueStr.indexOf(match);
+                            if(matchStart > 0){
+                                element.append(viewValueStr.substring(0, matchStart));
                             }
-                        });
-                    } else {
-                        container = container.html();
-                    }
+                            var fieldScope = scope.$parent.$new();
+                            fieldScope.fieldString = viewValueStr.substr(matchStart, match.length);
+                            var matchElement = $compile('<field field-string="fieldString" editable="true" />')(fieldScope);
+                            element.append(matchElement);
 
-                    return element.html(container);
+                            viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
+                        });
+                    }
+                    element.append(viewValueStr);
                 };
 
-                element.on('focusin', function (event) {
-                    var el = this;
-
-                    event.stopPropagation();
-
-                    window.setTimeout(function () {
-                        var sel, range;
-                        if (window.getSelection && document.createRange) {
-                            range = document.createRange();
-                            range.selectNodeContents(el);
-
-                            if (el.childNodes.length !== 0) {
-                                range.setStartAfter(el.childNodes[el.childNodes.length - 1]);
-                            }
-
-                            range.collapse(true);
-
-                            sel = window.getSelection();
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        } else if (document.body.createTextRange) {
-                            range = document.body.createTextRange();
-
-                            if (el.childNodes.length !== 0) {
-                                range.moveToElementText(el.childNodes[el.childNodes.length - 1]);
-                            }
-
-                            range.collapse(true);
-                            range.select();
-                        }
-                    }, 1);
-
-                    if (ngModel.$viewValue !== $.trim(element.html())) {
-                        return scope.$eval(read);
-                    }
+                scope.$watch(function () {
+                    return ngModel.$viewValue;
+                }, function(){
+                    ngModel.$render();
                 });
 
                 element.on('keypress', function (event) {
@@ -384,11 +367,9 @@
                     }
                 });
 
-                element.bind('blur keyup change mouseleave', function (event) {
+                element.bind('blur keyup change', function (event) {
                     event.stopPropagation();
-                    if (ngModel.$viewValue !== $.trim(element.html())) {
-                        return scope.$eval(read);
-                    }
+                    return scope.$eval(read);
                 });
 
                 return read;
@@ -429,76 +410,73 @@
         };
     });
 
-    directives.directive('manipulationpopover', function ($compile, $templateCache, $http) {
+    directives.directive('manipulationPopover', function ($compile, $templateCache, $http, ManageTaskUtils) {
         return {
             restrict: 'A',
-            link: function (scope, el, attrs) {
-                var manipulationOptions = '', title = '', loader, manType = attrs.manipulationpopover,
-                elType = attrs.type, msgScope = scope, filter = scope.$parent.filter;
+            scope: {
+                manipulations: "=",
+                manipulationType: "="
+            },
+            link: function (scope, element, attrs) {
+                if(!scope.manipulationType) return false;
+                if (['UNICODE', 'TEXTAREA', 'DATE'].indexOf(scope.manipulationType) == -1) return false;
+                if(!scope.manipulations) scope.manipulations = [];
 
-                while (msgScope.msg === undefined) {
-                    msgScope = msgScope.$parent;
+                var filter = scope.$parent.filter; // Should pull in better way...
+
+                // Get real source.
+                scope.msg = function (str) {
+                    return str;
                 }
-
-                if (manType === 'STRING') {
-                    title = msgScope.msg('task.stringManipulation', '');
-                    loader = $http.get('../tasks/partials/widgets/string-manipulation.html', {cache: $templateCache})
-                        .success(function (html) {
-                            manipulationOptions = html;
-                        });
-                } else if (manType === 'DATE') {
-                    title = msgScope.msg('task.dateManipulation', '');
-                    loader = $http.get('../tasks/partials/widgets/date-manipulation.html', {cache: $templateCache})
-                        .success(function (html) {
-                            manipulationOptions = html;
-                        });
-                } else if (manType === 'DATE2DATE') {
-                  title = msgScope.msg('task.dateManipulation', '');
-                   loader = $http.get('../tasks/partials/widgets/date2date-manipulation.html', {cache: $templateCache})
-                       .success(function (html) {
-                           manipulationOptions = html;
-                       });
-                }
-
-                el.on('click', function (event) {
-                    var man = $("[ismanipulate=true]").text();
-                    if (event.target && event.target.className === 'close badge-close' && event.target.parentElement) {
-                        event.target.parentElement.remove();
-                        return;
-                    }
-                    if (manType !== 'NONE') {
-                        if (man.length === 0) {
-                            angular.element(this).attr('ismanipulate', 'true');
-                        } else {
-                            angular.element(this).removeAttr('ismanipulate');
-                        }
-                    }
-
+                element.popover({
+                    //title: title,
+                    html: true,
+                    content: function () {
+                        return "FOO";
+                    },
+                    placement: "auto left",
+                    trigger: 'manual'
+                }).click(function (event) {
+                    event.stopPropagation();
+                    window.getSelection().removeAllRanges(); // Make sure no text is selected...
+                    element.popover('show'); // MUST close other popups on Open (should close when element clicked second time)
                 });
+            }
+        };
+    });
 
+    directives.directive('manipulationSorter', function() {
+        return {
+            restrict: 'EA',
+            compile: function () {
+/*
 
-                if (elType === 'UNICODE' || elType === 'TEXTAREA' || elType === 'DATE') {
-                    el.popover({
-                        template : '<div unselectable="on" contenteditable="false" class="popover dragpopover"><div unselectable="on" class="arrow"></div><div unselectable="on" class="popover-inner"><h3 unselectable="on" class="popover-title unselectable defaultCursor"></h3><div unselectable="on" class="popover-content unselectable"><p unselectable="on"></p></div></div></div>',
-                        title: title,
-                        html: true,
-                        content: function () {
-                            var elem = $(manipulationOptions), element, manipulation;
+                var title, templateURI;
+                switch(scope.manipulationType){
+                    case 'STRING':
+                        title = msgScope.msg('task.stringManipulation', '');
+                        templateURI = '../tasks/partials/widgets/string-manipulation.html';
+                        break;
+                    case 'DATE':
+                        title = msgScope.msg('task.dateManipulation', '');
+                        templateURI = '../tasks/partials/widgets/date-manipulation.html';
+                        break;
+                    case 'DATE2DATE':
+                        title = msgScope.msg('task.dateManipulation', '');
+                        templateURI = '../tasks/partials/widgets/date2date-manipulation.html';
+                        break;
+                }
+
+var elem = $(html), element, manipulation;
                             scope.sortableArrayTemp = [];
                             $compile(elem)(msgScope);
-                            msgScope.$apply(elem);
-                            element = $("[ismanipulate=true]");
-                            manipulation = element.attr('manipulate');
+                            msgScope.$apply(elem); // WTF
 
                             if (elem.length === 0) {
                                 elem = $(manipulationOptions);
                                 $compile(elem)(msgScope);
                                 msgScope.$apply(elem);
                             }
-
-                            elem.find("span").replaceWith(function () {
-                                return $(this)[0].outerHTML;
-                            });
 
                             if (manipulation !== undefined) {
 
@@ -513,66 +491,7 @@
                                 // Every new manipulation should be added to options array.
                                 // Add name and input for each manipulation and
                                 // pattern only if manipulation takes parameters
-                                var isValid = false, reg, i, options = [{
-                                        name: 'join',
-                                        input: 'input[join-update]',
-                                        pattern: 5
-                                    }, {
-                                        name: 'split',
-                                        input: 'input[split-update]',
-                                        pattern: 6
-                                    }, {
-                                        name: 'substring',
-                                        input: 'input[substring-update]',
-                                        pattern: 10
-                                    }, {
-                                        name: 'dateTime',
-                                        input: 'input[date-update]',
-                                        pattern: 9
-                                    }, {
-                                        name: 'plusDays',
-                                        input: 'input[manipulation-kind="plusDays"]',
-                                        pattern: 9
-                                    }, {
-                                        name: 'minusDays',
-                                        input: 'input[manipulation-kind="minusDays"]',
-                                        pattern: 10
-                                    }, {
-                                        name: 'plusHours',
-                                        input: 'input[manipulation-kind="plusHours"]',
-                                        pattern: 10
-                                    }, {
-                                        name: 'minusHours',
-                                        input: 'input[manipulation-kind="minusHours"]',
-                                        pattern: 11
-                                    }, {
-                                        name: 'plusMinutes',
-                                        input: 'input[manipulation-kind="plusMinutes"]',
-                                        pattern: 12
-                                    }, {
-                                        name: 'minusMinutes',
-                                        input: 'input[manipulation-kind="minusMinutes"]',
-                                        pattern: 13
-                                    }, {
-                                        name: 'format',
-                                        input: ''
-                                    }, {
-                                        name: 'capitalize',
-                                        input: ''
-                                    }, {
-                                        name: 'toUpper',
-                                        input: ''
-                                    }, {
-                                        name: 'toLower',
-                                        input: ''
-                                    }, {
-                                        name: 'URLEncode',
-                                        input: ''
-                                    }, {
-                                        name: 'parseDate',
-                                        input: 'input[parsedate-update]',
-                                        pattern: 10
-                                    } ];
+                                var isValid = false, reg, i, options = ManageTaskUtils.MANIPULATION_SETTINGS;
 
                                     for(i=0; i<options.length; i+=1) {
                                         if(elemen.indexOf(options[i].name) !== -1) {
@@ -616,80 +535,13 @@
                             }
 
                             return $compile(elem)(msgScope);
-                        },
-                        placement: "auto left",
-                        trigger: 'manual'
-                    }).click(function (event) {
-                        event.stopPropagation();
-                        if (!$(this).hasClass('hasPopoverShow') && (event.target || event.target.className !== 'close badge-close')) {
-                            var otherPopoverElem = $('.hasPopoverShow');
 
-                            window.getSelection().removeAllRanges();
+*/
+            },
+            link: function () {
 
-                            if (otherPopoverElem !== undefined && $(this) !== otherPopoverElem) {
-                                otherPopoverElem.popover('hide');
-                                otherPopoverElem.removeClass('hasPopoverShow');
-                                otherPopoverElem.removeAttr('ismanipulate');
-                            }
-                            if (filter && filter.key) {
-                                $(this).attr('manipulate', filter.key.split("?").slice(1).join(" "));
-                            }
-
-                            $(this).addClass('hasPopoverShow');
-                            $(this).attr('ismanipulate', 'true');
-                            $(this).popover('show');
-                        } else if (event.target || event.target.className !== 'close badge-close') {
-                            $(this).popover('hide');
-                            $(this).removeClass('hasPopoverShow');
-                            $(this).removeAttr('ismanipulate');
-                            $(this).focus();
-                        } else {
-                            if (event.target.parentElement) {
-                                event.target.parentElement.remove();
-                                $(this).popover('hide');
-                                $(this).removeClass('hasPopoverShow');
-                                $(this).removeAttr('ismanipulate');
-                                $(this).focus();
-                                return;
-                            }
-                        }
-
-                        $('.dragpopover').click(function (event) {
-                            event.stopPropagation();
-                        });
-
-                        $('.dragpopover').mousedown(function (event) {
-                            event.stopPropagation();
-                        });
-
-                        $('.create-edit-task').click(function () {
-                            $('.hasPopoverShow').each(function () {
-                                $(this).popover('hide');
-                                $(this).removeClass('hasPopoverShow');
-                                $(this).removeAttr('ismanipulate');
-                            });
-                        });
-                    });
-
-                    el.on("manipulateChanged", function () {
-                        if (filter && filter.key) {
-                            var manipulateAttributes = el.attr('manipulate'),
-                                key = filter.key.split("?")[0], array, i;
-
-                            if (manipulateAttributes !== "") {
-                                array = manipulateAttributes.split(" ");
-
-                                for (i = 0; i < array.length; i += 1) {
-                                    key = key.concat("?" + array[i]);
-                                }
-                                key = key.replace(/\?+(?=\?)/g, '');
-                            }
-                            filter.key = key;
-                        }
-                    });
-                }
             }
-        };
+        }
     });
 
     directives.directive('datetimePicker', function () {

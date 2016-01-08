@@ -1,1 +1,5 @@
-<span class="badge triggerField">{{field.displayName}}</span>
+<span class="badge triggerField field-{{field.prefix}}" contenteditable="false">
+    <span ng-if="!editable">{{field.displayName}}</span>
+    <span ng-if="editable" manipulation-popover manipulation-type="field.type" manipulations="field.manipulations">{{field.displayName}}</span>
+    <button ng-if="editable" class="close badge-close">Remove</button>
+</span>
