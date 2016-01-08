@@ -213,6 +213,16 @@
 .tasks .badge-close {
     float: none; !important;
     font-size: 12px; !important;
+    text-shadow: 0px 0px #FFF;
+    color: #FFF;
+    opacity: 1;
+    width: 12px;
+    overflow:hidden;
+}
+
+.tasks .badge-close:before {
+    content: "\F057";
+    font:normal normal normal 14px/1 FontAwesome;
 }
 
 .tasks editable-content > div[contenteditable] {

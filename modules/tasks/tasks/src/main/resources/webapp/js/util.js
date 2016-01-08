@@ -42,6 +42,66 @@
                     ]
                 }
             },
+            MANIPULATION_SETTINGS: [{
+                name: 'join',
+                input: 'input[join-update]',
+                pattern: 5
+            }, {
+                name: 'split',
+                input: 'input[split-update]',
+                pattern: 6
+            }, {
+                name: 'substring',
+                input: 'input[substring-update]',
+                pattern: 10
+            }, {
+                name: 'dateTime',
+                input: 'input[date-update]',
+                pattern: 9
+            }, {
+                name: 'plusDays',
+                input: 'input[manipulation-kind="plusDays"]',
+                pattern: 9
+            }, {
+                name: 'minusDays',
+                input: 'input[manipulation-kind="minusDays"]',
+                pattern: 10
+            }, {
+                name: 'plusHours',
+                input: 'input[manipulation-kind="plusHours"]',
+                pattern: 10
+            }, {
+                name: 'minusHours',
+                input: 'input[manipulation-kind="minusHours"]',
+                pattern: 11
+            }, {
+                name: 'plusMinutes',
+                input: 'input[manipulation-kind="plusMinutes"]',
+                pattern: 12
+            }, {
+                name: 'minusMinutes',
+                input: 'input[manipulation-kind="minusMinutes"]',
+                pattern: 13
+            }, {
+                name: 'format',
+                input: ''
+            }, {
+                name: 'capitalize',
+                input: ''
+            }, {
+                name: 'toUpper',
+                input: ''
+            }, {
+                name: 'toLower',
+                input: ''
+            }, {
+                name: 'URLEncode',
+                input: ''
+            }, {
+                name: 'parseDate',
+                input: 'input[parsedate-update]',
+                pattern: 10
+            } ],
             find: function (data) {
                 var where = (data && data.where) || [],
                     unique = (data && data.unique === false) ? false : true,
@@ -439,8 +499,8 @@
             if(str.substring(0,2)=='{{') str = str.substring(2,str.length);
             if(str.substr(-2,2)=='}}') str = str.substr(0,str.length-2);
 
-            var modifiers = str.split('?');
-            str = modifiers.shift();
+            var manipulations = str.split('?');
+            str = manipulations.shift();
 
             var field = {};
             field.displayName = str;
@@ -451,7 +511,8 @@
                 }
             });
 
-            modifiers.forEach(function () {
+            field.manipulations = [];
+            manipulations.forEach(function () {
                 this; // parse and add
             });
             return field;

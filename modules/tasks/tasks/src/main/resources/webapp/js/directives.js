@@ -344,7 +344,7 @@
                             }
                             var fieldScope = scope.$parent.$new();
                             fieldScope.fieldString = viewValueStr.substr(matchStart, match.length);
-                            var matchElement = $compile('<field field-string="fieldString" editable />')(fieldScope);
+                            var matchElement = $compile('<field field-string="fieldString" editable="true" />')(fieldScope);
                             element.append(matchElement);
 
                             viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
@@ -410,76 +410,73 @@
         };
     });
 
-    directives.directive('manipulationpopover', function ($compile, $templateCache, $http) {
+    directives.directive('manipulationPopover', function ($compile, $templateCache, $http, ManageTaskUtils) {
         return {
             restrict: 'A',
-            link: function (scope, el, attrs) {
-                var manipulationOptions = '', title = '', loader, manType = attrs.manipulationpopover,
-                elType = attrs.type, msgScope = scope, filter = scope.$parent.filter;
+            scope: {
+                manipulations: "=",
+                manipulationType: "="
+            },
+            link: function (scope, element, attrs) {
+                if(!scope.manipulationType) return false;
+                if (['UNICODE', 'TEXTAREA', 'DATE'].indexOf(scope.manipulationType) == -1) return false;
+                if(!scope.manipulations) scope.manipulations = [];
 
-                while (msgScope.msg === undefined) {
-                    msgScope = msgScope.$parent;
+                var filter = scope.$parent.filter; // Should pull in better way...
+
+                // Get real source.
+                scope.msg = function (str) {
+                    return str;
                 }
-
-                if (manType === 'STRING') {
-                    title = msgScope.msg('task.stringManipulation', '');
-                    loader = $http.get('../tasks/partials/widgets/string-manipulation.html', {cache: $templateCache})
-                        .success(function (html) {
-                            manipulationOptions = html;
-                        });
-                } else if (manType === 'DATE') {
-                    title = msgScope.msg('task.dateManipulation', '');
-                    loader = $http.get('../tasks/partials/widgets/date-manipulation.html', {cache: $templateCache})
-                        .success(function (html) {
-                            manipulationOptions = html;
-                        });
-                } else if (manType === 'DATE2DATE') {
-                  title = msgScope.msg('task.dateManipulation', '');
-                   loader = $http.get('../tasks/partials/widgets/date2date-manipulation.html', {cache: $templateCache})
-                       .success(function (html) {
-                           manipulationOptions = html;
-                       });
-                }
-
-                el.on('click', function (event) {
-                    var man = $("[ismanipulate=true]").text();
-                    if (event.target && event.target.className === 'close badge-close' && event.target.parentElement) {
-                        event.target.parentElement.remove();
-                        return;
-                    }
-                    if (manType !== 'NONE') {
-                        if (man.length === 0) {
-                            angular.element(this).attr('ismanipulate', 'true');
-                        } else {
-                            angular.element(this).removeAttr('ismanipulate');
-                        }
-                    }
-
+                element.popover({
+                    //title: title,
+                    html: true,
+                    content: function () {
+                        return "FOO";
+                    },
+                    placement: "auto left",
+                    trigger: 'manual'
+                }).click(function (event) {
+                    event.stopPropagation();
+                    window.getSelection().removeAllRanges(); // Make sure no text is selected...
+                    element.popover('show'); // MUST close other popups on Open (should close when element clicked second time)
                 });
+            }
+        };
+    });
 
+    directives.directive('manipulationSorter', function() {
+        return {
+            restrict: 'EA',
+            compile: function () {
+/*
 
-                if (elType === 'UNICODE' || elType === 'TEXTAREA' || elType === 'DATE') {
-                    el.popover({
-                        template : '<div unselectable="on" contenteditable="false" class="popover dragpopover"><div unselectable="on" class="arrow"></div><div unselectable="on" class="popover-inner"><h3 unselectable="on" class="popover-title unselectable defaultCursor"></h3><div unselectable="on" class="popover-content unselectable"><p unselectable="on"></p></div></div></div>',
-                        title: title,
-                        html: true,
-                        content: function () {
-                            var elem = $(manipulationOptions), element, manipulation;
+                var title, templateURI;
+                switch(scope.manipulationType){
+                    case 'STRING':
+                        title = msgScope.msg('task.stringManipulation', '');
+                        templateURI = '../tasks/partials/widgets/string-manipulation.html';
+                        break;
+                    case 'DATE':
+                        title = msgScope.msg('task.dateManipulation', '');
+                        templateURI = '../tasks/partials/widgets/date-manipulation.html';
+                        break;
+                    case 'DATE2DATE':
+                        title = msgScope.msg('task.dateManipulation', '');
+                        templateURI = '../tasks/partials/widgets/date2date-manipulation.html';
+                        break;
+                }
+
+var elem = $(html), element, manipulation;
                             scope.sortableArrayTemp = [];
                             $compile(elem)(msgScope);
-                            msgScope.$apply(elem);
-                            element = $("[ismanipulate=true]");
-                            manipulation = element.attr('manipulate');
+                            msgScope.$apply(elem); // WTF
 
                             if (elem.length === 0) {
                                 elem = $(manipulationOptions);
                                 $compile(elem)(msgScope);
                                 msgScope.$apply(elem);
                             }
-
-                            elem.find("span").replaceWith(function () {
-                                return $(this)[0].outerHTML;
-                            });
 
                             if (manipulation !== undefined) {
 
@@ -494,66 +491,7 @@
                                 // Every new manipulation should be added to options array.
                                 // Add name and input for each manipulation and
                                 // pattern only if manipulation takes parameters
-                                var isValid = false, reg, i, options = [{
-                                        name: 'join',
-                                        input: 'input[join-update]',
-                                        pattern: 5
-                                    }, {
-                                        name: 'split',
-                                        input: 'input[split-update]',
-                                        pattern: 6
-                                    }, {
-                                        name: 'substring',
-                                        input: 'input[substring-update]',
-                                        pattern: 10
-                                    }, {
-                                        name: 'dateTime',
-                                        input: 'input[date-update]',
-                                        pattern: 9
-                                    }, {
-                                        name: 'plusDays',
-                                        input: 'input[manipulation-kind="plusDays"]',
-                                        pattern: 9
-                                    }, {
-                                        name: 'minusDays',
-                                        input: 'input[manipulation-kind="minusDays"]',
-                                        pattern: 10
-                                    }, {
-                                        name: 'plusHours',
-                                        input: 'input[manipulation-kind="plusHours"]',
-                                        pattern: 10
-                                    }, {
-                                        name: 'minusHours',
-                                        input: 'input[manipulation-kind="minusHours"]',
-                                        pattern: 11
-                                    }, {
-                                        name: 'plusMinutes',
-                                        input: 'input[manipulation-kind="plusMinutes"]',
-                                        pattern: 12
-                                    }, {
-                                        name: 'minusMinutes',
-                                        input: 'input[manipulation-kind="minusMinutes"]',
-                                        pattern: 13
-                                    }, {
-                                        name: 'format',
-                                        input: ''
-                                    }, {
-                                        name: 'capitalize',
-                                        input: ''
-                                    }, {
-                                        name: 'toUpper',
-                                        input: ''
-                                    }, {
-                                        name: 'toLower',
-                                        input: ''
-                                    }, {
-                                        name: 'URLEncode',
-                                        input: ''
-                                    }, {
-                                        name: 'parseDate',
-                                        input: 'input[parsedate-update]',
-                                        pattern: 10
-                                    } ];
+                                var isValid = false, reg, i, options = ManageTaskUtils.MANIPULATION_SETTINGS;
 
                                     for(i=0; i<options.length; i+=1) {
                                         if(elemen.indexOf(options[i].name) !== -1) {
@@ -597,80 +535,13 @@
                             }
 
                             return $compile(elem)(msgScope);
-                        },
-                        placement: "auto left",
-                        trigger: 'manual'
-                    }).click(function (event) {
-                        event.stopPropagation();
-                        if (!$(this).hasClass('hasPopoverShow') && (event.target || event.target.className !== 'close badge-close')) {
-                            var otherPopoverElem = $('.hasPopoverShow');
 
-                            window.getSelection().removeAllRanges();
+*/
+            },
+            link: function () {
 
-                            if (otherPopoverElem !== undefined && $(this) !== otherPopoverElem) {
-                                otherPopoverElem.popover('hide');
-                                otherPopoverElem.removeClass('hasPopoverShow');
-                                otherPopoverElem.removeAttr('ismanipulate');
-                            }
-                            if (filter && filter.key) {
-                                $(this).attr('manipulate', filter.key.split("?").slice(1).join(" "));
-                            }
-
-                            $(this).addClass('hasPopoverShow');
-                            $(this).attr('ismanipulate', 'true');
-                            $(this).popover('show');
-                        } else if (event.target || event.target.className !== 'close badge-close') {
-                            $(this).popover('hide');
-                            $(this).removeClass('hasPopoverShow');
-                            $(this).removeAttr('ismanipulate');
-                            $(this).focus();
-                        } else {
-                            if (event.target.parentElement) {
-                                event.target.parentElement.remove();
-                                $(this).popover('hide');
-                                $(this).removeClass('hasPopoverShow');
-                                $(this).removeAttr('ismanipulate');
-                                $(this).focus();
-                                return;
-                            }
-                        }
-
-                        $('.dragpopover').click(function (event) {
-                            event.stopPropagation();
-                        });
-
-                        $('.dragpopover').mousedown(function (event) {
-                            event.stopPropagation();
-                        });
-
-                        $('.create-edit-task').click(function () {
-                            $('.hasPopoverShow').each(function () {
-                                $(this).popover('hide');
-                                $(this).removeClass('hasPopoverShow');
-                                $(this).removeAttr('ismanipulate');
-                            });
-                        });
-                    });
-
-                    el.on("manipulateChanged", function () {
-                        if (filter && filter.key) {
-                            var manipulateAttributes = el.attr('manipulate'),
-                                key = filter.key.split("?")[0], array, i;
-
-                            if (manipulateAttributes !== "") {
-                                array = manipulateAttributes.split(" ");
-
-                                for (i = 0; i < array.length; i += 1) {
-                                    key = key.concat("?" + array[i]);
-                                }
-                                key = key.replace(/\?+(?=\?)/g, '');
-                            }
-                            filter.key = key;
-                        }
-                    });
-                }
             }
-        };
+        }
     });
 
     directives.directive('datetimePicker', function () {
