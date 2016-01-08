@@ -1,3 +1,7 @@
+.ui-draggable-handle{
+    z-index:100;
+}
+
 .tasks .btn-in-frame-header {
     margin:-15px -10px;
     font-weight: normal;

@@ -210,7 +210,7 @@
     directives.directive('field', function (ManageTaskUtils) {
         return {
             restrict: 'E',
-            replace: true,
+            replace: false,
             scope:{
                 field: "=?",
                 fieldString: "=?",
@@ -223,6 +223,11 @@
                 // should be functions stuck to the scope or element...
                 element.data('value', scope.field);
                 element.data('text', scope.fieldString);
+
+                element.click(function (event) {
+                    if(!$(event.target).hasClass("field-remove")) return;
+                    element.remove();
+                });
             },
             templateUrl: '../tasks/partials/field.html'
         }
@@ -317,7 +322,7 @@
                     var container = $('<div></div>');
                     element.contents().each(function(){
                         var ele = $(this);
-                        if(ele.attr('field') || ele.attr('field-string')){ // this needs to change...
+                        if(this.tagName.toLowerCase() == 'field'){
                             container.append(ele.data('text'));
                         }else{
                             container.append(ele.text());
@@ -429,7 +434,16 @@
                     return str;
                 }
                 element.popover({
-                    //title: title,
+                    title: function () {
+                        switch(scope.manipulationType){
+                            case 'STRING':
+                                return scope.msg('task.stringManipulation', '');
+                            case 'DATE':
+                            case 'DATE2DATE':
+                                return scope.msg('task.dateManipulation', '');
+                        }
+                        return null;
+                    },
                     html: true,
                     content: function () {
                         return "FOO";
@@ -437,9 +451,16 @@
                     placement: "auto left",
                     trigger: 'manual'
                 }).click(function (event) {
+                    if ($(event.target).hasClass('field-remove')) return;
                     event.stopPropagation();
                     window.getSelection().removeAllRanges(); // Make sure no text is selected...
-                    element.popover('show'); // MUST close other popups on Open (should close when element clicked second time)
+                    if(element.hasClass('active')){
+                        element.removeClass('active');
+                        element.popover('hide');
+                    } else {
+                        element.addClass('active');
+                        element.popover('show');
+                    }
                 });
             }
         };
