@@ -322,7 +322,7 @@
                     var container = $('<div></div>');
                     element.contents().each(function(){
                         var ele = $(this);
-                        if(this.tagName.toLowerCase() == 'field'){
+                        if(this.tagName && this.tagName.toLowerCase() == 'field'){
                             container.append(ele.data('text'));
                         }else{
                             container.append(ele.text());
@@ -349,7 +349,7 @@
                             }
                             var fieldScope = scope.$parent.$new();
                             fieldScope.fieldString = viewValueStr.substr(matchStart, match.length);
-                            var matchElement = $compile('<field field-string="fieldString" editable="true" />')(fieldScope);
+                            var matchElement = $compile('<field field-string="fieldString" editable="true" contenteditable="false" />')(fieldScope);
                             element.append(matchElement);
 
                             viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
@@ -415,7 +415,7 @@
         };
     });
 
-    directives.directive('manipulationPopover', function ($compile, $templateCache, $http, ManageTaskUtils) {
+    directives.directive('manipulationPopover', function ($compile) {
         return {
             restrict: 'A',
             scope: {
@@ -433,230 +433,78 @@
                 scope.msg = function (str) {
                     return str;
                 }
-                element.popover({
-                    title: function () {
-                        switch(scope.manipulationType){
-                            case 'STRING':
-                                return scope.msg('task.stringManipulation', '');
-                            case 'DATE':
-                            case 'DATE2DATE':
-                                return scope.msg('task.dateManipulation', '');
-                        }
-                        return null;
-                    },
-                    html: true,
-                    content: function () {
-                        return "FOO";
-                    },
-                    placement: "auto left",
-                    trigger: 'manual'
-                }).click(function (event) {
+                element.click(function (event) {
                     if ($(event.target).hasClass('field-remove')) return;
                     event.stopPropagation();
                     window.getSelection().removeAllRanges(); // Make sure no text is selected...
                     if(element.hasClass('active')){
                         element.removeClass('active');
-                        element.popover('hide');
+                        element.popover('destroy');
                     } else {
                         element.addClass('active');
-                        element.popover('show');
+                        element.popover({
+                          title: function () {
+                             switch(scope.manipulationType){
+                                 case 'STRING':
+                                     return scope.msg('task.stringManipulation', '');
+                                 case 'DATE':
+                                 case 'DATE2DATE':
+                                     return scope.msg('task.dateManipulation', '');
+                             }
+                             return null;
+                          },
+                          html: true,
+                          content: '<manipulation-sorter type="'+scope.manipulationType+'" />', // I'd rather compile here...
+                          placement: "auto left",
+                          trigger: 'manual'
+                        }).on('shown.bs.popover', function(event){
+                          var popoverContent = $('.popover-content',$(event.target).next('.popover'))[0];
+                          $compile(popoverContent)(scope);
+                        }).popover('show');
                     }
                 });
             }
         };
     });
 
-    directives.directive('manipulationSorter', function() {
+    directives.directive('manipulationSorter', function($compile, $http, ManageTaskUtils) {
         return {
             restrict: 'EA',
-            compile: function () {
-/*
+            templateUrl: '../tasks/partials/manipulation-sorter.html',
+            link: function (scope, element, attrs) {
+                var templateURI = '../tasks/partials/widgets/string-manipulation.html';
+                if (attrs.type == 'DATE') templateURI = '../tasks/partials/widgets/date-manipulation.html';
+                if (attrs.type == 'DATE2DATE') templateURI = '../tasks/partials/widgets/date2date-manipulation.html';
 
-                var title, templateURI;
-                switch(scope.manipulationType){
-                    case 'STRING':
-                        title = msgScope.msg('task.stringManipulation', '');
-                        templateURI = '../tasks/partials/widgets/string-manipulation.html';
-                        break;
-                    case 'DATE':
-                        title = msgScope.msg('task.dateManipulation', '');
-                        templateURI = '../tasks/partials/widgets/date-manipulation.html';
-                        break;
-                    case 'DATE2DATE':
-                        title = msgScope.msg('task.dateManipulation', '');
-                        templateURI = '../tasks/partials/widgets/date2date-manipulation.html';
-                        break;
+                $http.get(templateURI).then(function (response) {
+                    element.append($compile(response.data)(scope));
+                });
+
+                // function to read active manipulations array & save as scope.manipulations
+                // Triggered by event OR manipulation element
+            },
+            controller: ['$scope', function ($scope) {
+                $scope.addManipulation = function (value, position) {
+                    alert("123,123");
                 }
 
-var elem = $(html), element, manipulation;
-                            scope.sortableArrayTemp = [];
-                            $compile(elem)(msgScope);
-                            msgScope.$apply(elem); // WTF
+                $scope.removeManipulation = function (manipulationStr) {
+                    return true;
+                }
 
-                            if (elem.length === 0) {
-                                elem = $(manipulationOptions);
-                                $compile(elem)(msgScope);
-                                msgScope.$apply(elem);
-                            }
-
-                            if (manipulation !== undefined) {
-
-                                scope.cleanArray = function() {
-                                    var indexArray = scope.sortableArrayTemp.indexOf("");
-                                    if (indexArray !== -1) {
-                                        scope.sortableArrayTemp.splice(indexArray,1);
-                                    }
-                                };
-
-                                scope.setSortable = function(elemen, index) {
-                                // Every new manipulation should be added to options array.
-                                // Add name and input for each manipulation and
-                                // pattern only if manipulation takes parameters
-                                var isValid = false, reg, i, options = ManageTaskUtils.MANIPULATION_SETTINGS;
-
-                                    for(i=0; i<options.length; i+=1) {
-                                        if(elemen.indexOf(options[i].name) !== -1) {
-                                            elemen = elemen.replace(elemen, options[i].name);
-                                            isValid = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (isValid) {
-                                        elem.find("span[setmanipulation="+elemen+"]").replaceWith(function () {
-                                            if (elemen !== undefined && elemen.indexOf(this.attributes.getNamedItem('setmanipulation').value) !== -1) {
-                                                $(this).parent().children().css({ 'display' : '' });
-                                                $(this).parent().addClass('active');
-
-                                                for(i=0; i<options.length; i+=1) {
-                                                    if (options[i].input !== '') {
-                                                        if (manipulation.indexOf(options[i].name) !== -1 && elemen.indexOf(options[i].name) !== -1) {
-                                                            $(this.nextElementSibling).css({ 'display' : '' });
-                                                            elem.find(options[i].input).val(manipulation.slice(manipulation.indexOf(options[i].name) + options[i].pattern, manipulation.indexOf(")", manipulation.indexOf(options[i].name))));
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-
-                                                $(elem[0]).append($(this).parent().clone().end());
-                                            }
-                                            return $(this)[0].outerHTML;
-                                        });
-                                    } else {
-                                        // invalid manipulation
-                                        reg = new RegExp("\\(.*?\\)", "g");
-                                        elemen = elemen.replace(reg,"");
-                                        elem.filter("ul#sortable").append('<li unselectable="on" class="padding-botton6 invalid"><span unselectable="on" class="pointer ng-binding" setmanipulation="'+elemen+'">'+elemen+'<span class="fa fa-times" style="float: right;"></span></span></li>');
-                                    }
-                                };
-
-                            scope.sortableArrayTemp = manipulation.split(" ");
-                            scope.sortableArrayTemp.forEach(scope.cleanArray);
-                            scope.sortableArrayTemp.forEach(scope.setSortable);
-                            }
-
-                            return $compile(elem)(msgScope);
-
-*/
-            },
-            link: function () {
-
-            }
+                $scope.isActive = function (manipulationStr) {
+                    return false;
+                }
+            }]
         }
     });
 
-    directives.directive('datetimePicker', function () {
+    directives.directive('manipulation', function () {
         return {
-            restrict: 'A',
-            link: function(scope, element, attrs) {
-                element.click(function () {
-                    $(this).prev('input').datetimepicker('show');
-                });
-            }
-        };
-    });
-
-    directives.directive('datetimePickerInput', function () {
-        return {
-            restrict: 'A',
-            link: function (scope, element, attrs) {
-                var parent = scope;
-
-                while (parent.selectedAction === undefined) {
-                    parent = parent.$parent;
-                }
-
-                element.datetimepicker({
-                    showTimezone: true,
-                    useLocalTimezone: true,
-                    dateFormat: 'yy-mm-dd',
-                    timeFormat: 'HH:mm z',
-                    showOn: true,
-                    constrainInput: false,
-                    onSelect: function (dateTex) {
-                        parent.filter(parent.selectedAction[$(this).data('action')].actionParameters, {hidden: false})[$(this).data('index')].value = dateTex;
-                        parent.$apply();
-                    }
-                });
-            }
-        };
-    });
-
-    directives.directive('timePickerInput', function () {
-        return {
-            restrict: 'A',
-            link: function (scope, element, attrs) {
-                var parent = scope;
-
-                while (parent.selectedAction === undefined) {
-                    parent = parent.$parent;
-                }
-
-                element.datetimepicker({
-                    showTimezone: true,
-                    timeOnly: true,
-                    useLocalTimezone: true,
-                    timeFormat: 'HH:mm z',
-                    onSelect: function (dateTex) {
-                        parent.filter(parent.selectedAction[$(this).data('action')].actionParameters, {hidden: false})[$(this).data('index')].value = dateTex;
-                        parent.$apply();
-                    }
-                });
-            }
-        };
-    });
-
-    directives.directive('setmanipulation', function () {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-
-                var manipulateElement = $("[ismanipulate=true]"), sortableElement, manipulateAttr;
-                scope.sortableArray = [];
-                scope.manipulations = '';
-
-                scope.cleanArray = function() {
-                    var indexArray = scope.sortableArray.indexOf("");
-                    if (indexArray !== -1) {
-                        scope.sortableArray.splice(indexArray,1);
-                    }
-                };
-
-                scope.normalizeArray = function(element, index) {
-                    scope.sortableArray.splice(index, 1, element + ' ');
-                };
-
-                scope.setSortableArray = function() {
-                manipulateAttr = manipulateElement.attr("manipulate");
-                    if (manipulateAttr !== undefined) {
-                        scope.sortableArray = manipulateAttr.split(" ");
-                        scope.sortableArray.forEach(scope.cleanArray);
-                        scope.sortableArray.forEach(scope.normalizeArray);
-                    }
-                };
-
-                scope.setSortableArray();
+            restrict : 'EA',
+            require: '^manipulationSorter',
+            templateUrl: '../tasks/partials/manipulation.html',
+            link : function (scope, el, attrs, manipulationSorter) {
 
                 el.on('mouseenter mousedown', function() {
 
@@ -692,135 +540,7 @@ var elem = $(html), element, manipulation;
                 });
 
                 el.on("click", function () {
-                    var manipulateElement = $("[ismanipulate=true]"), joinSeparator = "", reg, manipulation, manipulateAttributes, manipulationAttributesIndex, nonParamManip = true, i, found,
-                    // Every new manipulation that takes parameter should be added to
-                    // paramOptions array. Name is just a name of manipulation
-                    // and id is id of input field for that manipulation
-                    paramOptions = [
-                        {
-                            name: 'join',
-                            id: '#joinSeparator'
-                        },
-                        {
-                            name: 'split',
-                            id: '#splitSeparator'
-                        },
-                        {
-                            name: 'substring',
-                            id: '#substringSeparator'
-                        },
-                        {
-                            name: 'dateTime',
-                            id: '#dateFormat'
-                        },
-                        {
-                            name: 'plusDays',
-                            id: '#plusDays'
-                        },
-                        {
-                            name: 'minusDays',
-                            id: '#minusDays'
-                        },
-                        {
-                            name: 'plusHours',
-                            id: '#plusHours'
-                        },
-                        {
-                            name: 'minusHours',
-                            id: '#minusHours'
-                        },
-                        {
-                            name: 'plusMinutes',
-                            id: '#plusMinutes'
-                        },
-                        {
-                            name: 'minusMinutes',
-                            id: '#minusMinutes'
-                        },
-                        {
-                            name: 'parseDate',
-                            id: '#parseDate'
-                        },
-                        {
-                            name: 'format',
-                            id: ''
-                        }
-                    ];
 
-                    manipulation = this.getAttribute("setManipulation");
-                    manipulateAttributes = manipulateElement.attr("manipulate") || "";
-                    document.getSelection().removeAllRanges();
-
-                    if ($(this).parent(".invalid").remove().length) {
-                        if (manipulateAttributes.indexOf(manipulation) !== -1) {
-                            reg = new RegExp(manipulation + "(\\(.*\\))?( |$)", "g");
-                            manipulateAttributes = manipulateAttributes.replace(reg, '');
-                            manipulateElement.attr('manipulate', manipulateAttributes);
-                            scope.setSortableArray();
-                        }
-                        return;
-                    }
-
-                    if (manipulateAttributes.charAt(manipulateAttributes.length - 1) !== " ") {
-                        manipulateAttributes = manipulateAttributes + " ";
-                    }
-
-                    if (manipulateAttributes.indexOf(manipulation) !== -1) {
-                        manipulationAttributesIndex = manipulateElement.attr("manipulate").indexOf(manipulation);
-
-                        if (manipulation === "format") {
-                            reg = new RegExp("format(\\((\\{.*\\})*\\))", "g");
-                            manipulateAttributes = manipulateAttributes.replace(reg, '');
-                        } else {
-
-                            for (i = 0; i < paramOptions.length; i += 1) {
-                                if(manipulation === paramOptions[i].name) {
-                                    nonParamManip = false;
-                                    break;
-                                }
-                            }
-
-                            if (nonParamManip) {
-                                reg = new RegExp(manipulation + "(\\(.*\\))?( |$)", "g");
-                                manipulateAttributes = manipulateAttributes.replace(reg, '');
-                            } else {
-                                joinSeparator = manipulation + "\\(" + this.nextElementSibling.value + "\\)( |$)";
-                                reg = new RegExp(joinSeparator, "g");
-                                manipulateAttributes = manipulateAttributes.replace(reg, '');
-                            }
-                        }
-                    } else {
-                        manipulateAttributes = manipulateAttributes.replace(/ +(?= )/g, '');
-
-                        for(i=0; i<paramOptions.length; i+=1) {
-                            if(manipulation === paramOptions[i].name) {
-                                if(paramOptions[i].id !== '') {
-                                    $(paramOptions[i].id).val("");
-                                }
-                                manipulateAttributes = manipulateAttributes + manipulation + "()" + " ";
-                                found = true;
-                                break;
-                            }
-                        }
-                        if(!found) {
-                            manipulateAttributes = manipulateAttributes + manipulation + " ";
-                        }
-                    }
-
-                    manipulateElement.attr('manipulate', manipulateAttributes);
-                    manipulateElement.trigger('manipulateChanged');
-                    scope.setSortableArray();
-
-                    if (!$(this).parent().hasClass('active')) {
-                        $(this).parent().children().css({ 'display' : '' });
-                        $(this).parent().addClass('active');
-                        $('#sortable').append($(this.parentElement).clone().end());
-                    } else {
-                        $(this).parent().children('.glyphicon').css({ 'display' : 'none' });
-                        $(this.nextElementSibling).css({ 'display' : 'none' });
-                        $(this).parent().removeClass("active");
-                        $('#sortable-no').append($(this.parentElement).clone().end());
-                    }
                 });
             }
         };
