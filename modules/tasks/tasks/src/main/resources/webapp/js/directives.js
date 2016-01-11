@@ -480,19 +480,45 @@
                     element.append($compile(response.data)(scope));
                 });
 
-                // function to read active manipulations array & save as scope.manipulations
-                // Triggered by event OR manipulation element
+                $('.sortable', element).sortable({
+                    placeholder: "ui-state-highlight",
+                    update: function (event, ui) {
+                        var sorted = $(event.target);
+                        var manipulations = [];
+                        $('.manipulation', sorted).each(function(){
+                            manipulations.push({
+                                type: $(this).attr('type')
+                            });
+                        });
+                        scope.manipulations = manipulations;
+                        scope.$apply();
+                    }
+                });
             },
             controller: ['$scope', function ($scope) {
-                $scope.addManipulation = function (value, position) {
-                    alert("123,123");
+                this.addManipulation = function (type, position) {
+                    $scope.manipulations.push({
+                        type: type
+                    });
+                    $scope.$apply();
                 }
 
-                $scope.removeManipulation = function (manipulationStr) {
-                    return true;
+                this.removeManipulation = function (manipulationStr) {
+                    var manipulations = [];
+                    var returnVal = false;
+                    for (var obj of $scope.manipulations) {
+                        if(obj.type != manipulationStr) manipulations.push(obj);
+                        if(obj.type == manipulationStr) returnVal = true;
+                    }
+                    $scope.manipulations = manipulations;
+                    $scope.$apply();
+                    return returnVal;
                 }
 
-                $scope.isActive = function (manipulationStr) {
+                this.isActive = function (manipulationStr) {
+                    for (var obj of $scope.manipulations) {
+                        if (obj.type == manipulationStr) return true;
+                    }
                     return false;
                 }
             }]
@@ -503,45 +529,36 @@
         return {
             restrict : 'EA',
             require: '^manipulationSorter',
+            transclude: true,
+            replace: true,
             templateUrl: '../tasks/partials/manipulation.html',
-            link : function (scope, el, attrs, manipulationSorter) {
+            scope: {
+                arguments: '=?'
+            },
+            link : function (scope, element, attrs, manipulationSorter) {
+                scope.msg = scope.$parent.msg;
+                scope.type = attrs.type;
+                if(attrs.active) scope.active = true;
 
-                el.on('mouseenter mousedown', function() {
-
-                    scope.dragStart = function(e, ui) {
-                        ui.originalPosition.top = 0;
-                        scope.setSortableArray();
-                        ui.item.data('start', ui.item.index());
-                    };
-
-                    scope.dragEnd = function(e, ui) {
-                        var start = ui.item.data('start'),
-                        end = ui.item.index();
-                        scope.sortableArray.splice(end, 0,
-                        scope.sortableArray.splice(start, 1)[0]);
-                        if(scope.sortableArray.length) {
-                            scope.manipulations = scope.sortableArray.join("");
-                        }
-                        manipulateElement.attr('manipulate', scope.manipulations);
-                        manipulateElement.trigger('manipulateChanged');
-                        scope.$apply();
-                    };
-
-                    sortableElement = $('#sortable').sortable({
-                        placeholder: 'ui-state-highlight',
-                        axis: 'y',
-                        cursor: 'move',
-                        opacity: 0.95,
-                        tolerance: 'pointer',
-                        zIndex: 9999,
-                        start: scope.dragStart,
-                        update: scope.dragEnd
+                if(attrs.active) {
+                    element.on("click", ".remove", function(){
+                        manipulationSorter.removeManipulation(scope.type);
                     });
-                });
+                } else {
+                    scope.$watch(function () {
+                        return manipulationSorter.isActive(scope.type);
+                    }, function (active) {
+                        if(active){
+                            element.hide();
+                        } else {
+                            element.show();
+                        }
+                    });
 
-                el.on("click", function () {
-
-                });
+                    element.on('click', function () {
+                        manipulationSorter.addManipulation(scope.type);
+                    });
+                }
             }
         };
     });

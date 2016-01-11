@@ -1,3 +1,5 @@
-<span unselectable="on" class="pointer" setmanipulation="toLower">{{msg('task.toLower')}}</span>
-<ng-transclude ng-if="editable" />
-<span ng-if="editable" class="glyphicon glyphicon-sort" title="{{msg('task.infoChangeOrder')}}"></span>
+<li ng-class="{manipulation: true, active: active}">
+    <span unselectable="on" class="pointer" setmanipulation="{{type}}">{{msg('task.' + type)}}</span>
+    <ng-transclude></ng-transclude>
+    <button ng-if="active" class="remove" >Remove</button>
+</li>

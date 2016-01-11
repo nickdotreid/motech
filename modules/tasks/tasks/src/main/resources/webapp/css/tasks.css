@@ -33,7 +33,9 @@
     font-size: 1.2em;
 }
 
-.tasks #sortable-no li {
+.tasks .manipulation{
+    display: block;
+    position:relative;
     color: #333333;
     text-decoration: none;
     list-style: none;
@@ -41,19 +43,67 @@
     border-radius: 3px;
     background-color: #F4F4F4;
     padding: 2px 6px;
-    height: 28px;
     margin: 2px 2px 2px 25px;
 }
 
-.tasks #sortable-no li:hover {
+.tasks .manipulation:hover {
     color: #046FD3;
     border-color: #046FD3;
 }
 
-.tasks #sortable li span[unselectable="on"]:before {
-    content: "\2611";
+.tasks .manipulation.active {
+    cursor: move;
+    border: 1px solid #92C7E3;
+    border-radius: 3px;
+    color: #224477;
+    background: #ebf1f6;
+    padding-right: 20px;
+}
+
+.tasks .manipulation.active.invalid {
+    cursor: move;
+    border: 1px solid #e3ae92;
+    border-radius: 3px;
+    color: #7F2419;
+    background: #FCEDE1;
+}
+
+.tasks .manipulation:before{
+    content: "\F067"; /* icon-plus */
+    font:normal normal normal 14px/1 FontAwesome;
     margin-right: 5px;
-    font-size: 1.2em;
+}
+
+.tasks .manipulation.active:before {
+    content: "\F0DC"; /* icon-sort */
+}
+
+.tasks .manipulation .remove {
+    display: block;
+    width: 12px;
+    height: 20px;
+    overflow: hidden;
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    background: transparent;
+    border: 0px;
+}
+
+.tasks .manipulation .remove:hover {
+    color: #CF0000;
+}
+
+.tasks .manipulation .remove:before {
+    content: "\F057"; /* icon-plus */
+    font:normal normal normal 14px/1 FontAwesome;
+}
+
+.manipulation input {
+    line-height: 1em;
+    padding: 0 6px;
+    width: 50px;
+    margin: 0px 8px;
 }
 
 .tasks #sortable > li.ui-sortable-helper {
@@ -79,29 +129,6 @@
 
 .tasks #sortable li:nth-last-child(1) {
     margin-bottom: 15px;
-}
-
-#sortable li.active {
-    cursor: move;
-    border: 1px solid #92C7E3;
-    border-radius: 3px;
-    color: #224477;
-    background: #ebf1f6;
-}
-
-.tasks #sortable li.invalid {
-    cursor: move;
-    border: 1px solid #e3ae92;
-    border-radius: 3px;
-    color: #7F2419;
-    background: #FCEDE1;
-}
-
-.tasks #sortable input {
-    line-height: 1em;
-    padding: 0 6px;
-    width: 50px;
-    margin: 0px 8px;
 }
 
 .tasks #sortable span > span {
