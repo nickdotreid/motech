@@ -472,13 +472,6 @@
             restrict: 'EA',
             templateUrl: '../tasks/partials/manipulation-sorter.html',
             link: function (scope, element, attrs) {
-                var templateURI = '../tasks/partials/widgets/string-manipulation.html';
-                if (attrs.type == 'DATE') templateURI = '../tasks/partials/widgets/date-manipulation.html';
-                if (attrs.type == 'DATE2DATE') templateURI = '../tasks/partials/widgets/date2date-manipulation.html';
-
-                $http.get(templateURI).then(function (response) {
-                    element.append($compile(response.data)(scope));
-                });
 
                 $('.sortable', element).sortable({
                     placeholder: "ui-state-highlight",
@@ -487,7 +480,8 @@
                         var manipulations = [];
                         $('.manipulation', sorted).each(function(){
                             manipulations.push({
-                                type: $(this).attr('type')
+                                type: $(this).attr('type'),
+                                argument: $(this).data('argument')
                             });
                         });
                         scope.manipulations = manipulations;
@@ -496,9 +490,29 @@
                 });
             },
             controller: ['$scope', function ($scope) {
-                this.addManipulation = function (type, position) {
+                var stringManipulations = [
+                    {type:'toUpper'},
+                    {type:'toLower'},
+                    {type:'capitalize'},
+                    {type:'URLEncode'},
+                    {type:'join', argumentType:'text'},
+                    {type:'split', argumentType:'text'},
+                    {type:'substring', argumentType:'text'},
+                    {type:'format', argumentType:'format'},
+                    {type:'parseDate', argumentType:'text'},
+                ];
+
+                if ($scope.type == 'DATE') true;
+                if ($scope.type == 'DATE2DATE') true;
+
+                $scope.availableManipulations = stringManipulations;
+
+
+                this.addManipulation = function (type, argument) {
+                    if(!argument) argument = false;
                     $scope.manipulations.push({
-                        type: type
+                        type: type,
+                        argument: argument
                     });
                     $scope.$apply();
                 }
@@ -525,7 +539,7 @@
         }
     });
 
-    directives.directive('manipulation', function () {
+    directives.directive('manipulation', function ($compile) {
         return {
             restrict : 'EA',
             require: '^manipulationSorter',
@@ -533,7 +547,7 @@
             replace: true,
             templateUrl: '../tasks/partials/manipulation.html',
             scope: {
-                arguments: '=?'
+                argument: '=?'
             },
             link : function (scope, element, attrs, manipulationSorter) {
                 scope.msg = scope.$parent.msg;
@@ -541,6 +555,17 @@
                 if(attrs.active) scope.active = true;
 
                 if(attrs.active) {
+                    var attributeFieldTemplate = false;
+                    if (['join', 'split', 'substring', 'parsedate'].indexOf(scope.type) >= 0) {
+                        attributeFieldTemplate = '<input type="text" ng-model="argument" />';
+                        if(!scope.argument) scope.argument = "";
+                        element.append($compile(attributeFieldTemplate)(scope));
+                    }
+
+                    scope.$watch('argument', function(newValue) {
+                        element.data('argument', newValue);
+                    });
+
                     element.on("click", ".remove", function(){
                         manipulationSorter.removeManipulation(scope.type);
                     });
