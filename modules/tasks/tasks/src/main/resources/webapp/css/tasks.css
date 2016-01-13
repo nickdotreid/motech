@@ -55,6 +55,19 @@
     background-color: #f89406;
 }
 
+.tasks .field-bubble .badge{
+    border-radius: 5px;
+    font-size: 0.8em;
+    background-color: #FFF;
+    color: #F4F4F4;
+}
+.tasks .field-trigger .badge{
+    color: #3a87ad;
+}
+.tasks .field-ad .badge{
+    color: #f89406;
+}
+
 manipulation-sorter ol.sortable li.ui-state-highlight{
     list-style: none;
     height: 15px;
@@ -122,7 +135,7 @@ manipulation-sorter ol.sortable li.ui-state-highlight{
 }
 
 .tasks .manipulation .remove:before {
-    content: "\F057"; /* icon-plus */
+    content: "\f057"; /* icon-times */
     font:normal normal normal 14px/1 FontAwesome;
 }
 
