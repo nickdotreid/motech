@@ -256,13 +256,7 @@
                     drop: function (event, ui) {
                         var field = ui.draggable.data('value'); // Gross way to get the data...
                         var fieldString = ManageTaskUtils.formatField(field);
-                        if(ngModel.$viewValue) {
-                            ngModel.$setViewValue(ngModel.$viewValue + fieldString);
-                        } else {
-                            ngModel.$setViewValue(fieldString);
-                        }
-                        scope.$digest();
-                        scope.$apply();
+                        scope.$emit('field.dropped', field);
                     }
                 });
             }
@@ -315,7 +309,7 @@
             link: function (scope, element, attrs, ngModel) {
                 if (!ngModel) return;
 
-                var readThrottle, read = function () {
+                var read = function () {
                     var container = $('<div></div>');
                     element.contents().each(function(){
                         var ele = $(this);
@@ -326,12 +320,7 @@
                             container.append(ele.text());
                         }
                     });
-                    ngModel.$setViewValue(container.text());
-
-                    if(readThrottle) clearTimeout(readThrottle);
-                    readThrottle = setTimeout(function() {
-                        scope.$apply();
-                    }, 500);
+                    return container.text();
                 };
 
                 ngModel.$render = function () {
@@ -363,6 +352,14 @@
                     ngModel.$render();
                 });
 
+                scope.$on('field.dropped', function(event, field) {
+                    event.stopPropagation();
+                    if(!field) return;
+                    // maybe append formatted field at cursor point?
+                    ngModel.$setViewValue(read() + ManageTaskUtils.formatField(field));
+                    scope.$apply();
+                });
+
                 element.on('keypress', function (event) {
                     var type = $(this).data('type');
 
@@ -371,10 +368,11 @@
                     }
                 });
 
-                element.bind('blur keyup change', function (event) {
+                element.bind('blur', function (event) {
                     event.stopPropagation();
-                    if(element[0].contains(event.target)) return;
-                    return scope.$eval(read);
+                    if(element[0] != event.target) return;
+                    ngModel.$setViewValue(read());
+                    scope.$apply();
                 });
 
                 return read;
@@ -444,10 +442,10 @@
                       title: function () {
                          switch(scope.manipulationType){
                              case 'STRING':
-                                 return scope.msg('task.stringManipulation', '');
+                                 return scope.msg('task.stringManipulation');
                              case 'DATE':
                              case 'DATE2DATE':
-                                 return scope.msg('task.dateManipulation', '');
+                                 return scope.msg('task.dateManipulation');
                          }
                          return null;
                       },

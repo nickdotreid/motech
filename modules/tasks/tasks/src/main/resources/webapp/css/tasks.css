@@ -46,6 +46,7 @@
     vertical-align: baseline;
     background-color: #777;
     border-radius: 10px;
+    cursor: pointer;
 }
 .tasks .field-trigger{
     background-color: #3a87ad;
