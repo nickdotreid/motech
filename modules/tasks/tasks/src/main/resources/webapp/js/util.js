@@ -487,7 +487,11 @@
                     str = field.displayName;
             }
 
-            // format manipulations...
+            if (field.manipulations && Array.isArray(field.manipulations)) {
+                field.manipulations.forEach(function(manipulation) {
+                    str += "?{0}({1})".format(manipulation.type, manipulation.argument);
+                });
+            }
 
             return "{{" + str + "}}";
         }
@@ -507,13 +511,19 @@
 
             existingFields.forEach(function (exField) {
                 if("{{" + str + "}}" == utils.formatField(exField)){
-                    field = exField;
+                    field = Object.assign({}, exField);
                 }
             });
 
             field.manipulations = [];
-            manipulations.forEach(function () {
-                this; // parse and add
+            manipulations.forEach(function (manipulationStr) {
+                var manipulation = {};
+                var parts = manipulationStr.split('(');
+                manipulation.type = parts.shift();
+                if(parts.length>0) {
+                    manipulation.argument = parts[0].replace(')','');
+                }
+                field.manipulations.push(manipulation);
             });
             return field;
         };

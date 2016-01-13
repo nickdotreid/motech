@@ -207,22 +207,18 @@
         };
     });
 
-    directives.directive('field', function (ManageTaskUtils) {
+    directives.directive('field', function () {
         return {
             restrict: 'E',
             replace: false,
             scope:{
-                field: "=?",
-                fieldString: "=?",
+                field: "=",
                 editable: "=?"
             },
             link: function (scope, element, attrs) {
-                if (scope.fieldString && !scope.field) scope.field = ManageTaskUtils.parseField(scope.fieldString, scope.$parent.getAvailableFields());
-                if (scope.field && !scope.fieldString) scope.fieldString = ManageTaskUtils.formatField(scope.field);
+                if(!scope.field.manipulations || !Array.isArray(scope.field.manipulations)) scope.field.manipulations = [];
 
-                // should be functions stuck to the scope or element...
                 element.data('value', scope.field);
-                element.data('text', scope.fieldString);
 
                 element.click(function (event) {
                     if(!$(event.target).hasClass("field-remove")) return;
@@ -258,7 +254,8 @@
             link: function (scope, element, attrs, ngModel) {
                 element.droppable({
                     drop: function (event, ui) {
-                        var fieldString = ui.draggable.data('text'); // would be cool if it
+                        var field = ui.draggable.data('value'); // Gross way to get the data...
+                        var fieldString = ManageTaskUtils.formatField(field);
                         if(ngModel.$viewValue) {
                             ngModel.$setViewValue(ngModel.$viewValue + fieldString);
                         } else {
@@ -311,7 +308,7 @@
         };
     });
 
-    directives.directive('contenteditable', function ($compile) {
+    directives.directive('contenteditable', function ($compile, ManageTaskUtils) {
         return {
             restrict: 'A',
             require: '?ngModel',
@@ -323,7 +320,8 @@
                     element.contents().each(function(){
                         var ele = $(this);
                         if(this.tagName && this.tagName.toLowerCase() == 'field'){
-                            container.append(ele.data('text'));
+                            var field = ele.data('value');
+                            container.append(ManageTaskUtils.formatField(field));
                         }else{
                             container.append(ele.text());
                         }
@@ -348,8 +346,9 @@
                                 element.append(viewValueStr.substring(0, matchStart));
                             }
                             var fieldScope = scope.$parent.$new();
-                            fieldScope.fieldString = viewValueStr.substr(matchStart, match.length);
-                            var matchElement = $compile('<field field-string="fieldString" editable="true" contenteditable="false" />')(fieldScope);
+                            var fieldStr = viewValueStr.substr(matchStart, match.length);
+                            fieldScope.field = ManageTaskUtils.parseField(fieldStr, scope.$parent.getAvailableFields());
+                            var matchElement = $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
                             element.append(matchElement);
 
                             viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
@@ -374,6 +373,7 @@
 
                 element.bind('blur keyup change', function (event) {
                     event.stopPropagation();
+                    if(element[0].contains(event.target)) return;
                     return scope.$eval(read);
                 });
 
@@ -425,7 +425,7 @@
             link: function (scope, element, attrs) {
                 if(!scope.manipulationType) return false;
                 if (['UNICODE', 'TEXTAREA', 'DATE'].indexOf(scope.manipulationType) == -1) return false;
-                if(!scope.manipulations) scope.manipulations = [];
+                if(!scope.manipulations) return false; // Break if isn't bound...
 
                 var filter = scope.$parent.filter; // Should pull in better way...
 
@@ -433,35 +433,48 @@
                 scope.msg = function (str) {
                     return str;
                 }
+
+                var hidePopup = function () {
+                    element.removeClass('active');
+                    element.popover('destroy');
+                },
+                showPopup = function () {
+                    element.addClass('active');
+                    element.popover({
+                      title: function () {
+                         switch(scope.manipulationType){
+                             case 'STRING':
+                                 return scope.msg('task.stringManipulation', '');
+                             case 'DATE':
+                             case 'DATE2DATE':
+                                 return scope.msg('task.dateManipulation', '');
+                         }
+                         return null;
+                      },
+                      html: true,
+                      content: '<manipulation-sorter type="'+scope.manipulationType+'" />', // I'd rather compile here...
+                      placement: "auto left",
+                      trigger: 'manual'
+                    }).on('shown.bs.popover', function(event){
+                      var popoverContent = $('.popover-content',$(event.target).next('.popover'))[0];
+                      $compile(popoverContent)(scope);
+
+                      $(document).on('click', function(event){
+                        if (!popoverContent.contains(event.target)){
+                            $(document).off(event);
+                            hidePopup();
+                        }
+                      });
+
+                    }).popover('show');
+                };
+
                 element.click(function (event) {
                     if ($(event.target).hasClass('field-remove')) return;
+                    if (element.hasClass('active')) return;
                     event.stopPropagation();
                     window.getSelection().removeAllRanges(); // Make sure no text is selected...
-                    if(element.hasClass('active')){
-                        element.removeClass('active');
-                        element.popover('destroy');
-                    } else {
-                        element.addClass('active');
-                        element.popover({
-                          title: function () {
-                             switch(scope.manipulationType){
-                                 case 'STRING':
-                                     return scope.msg('task.stringManipulation', '');
-                                 case 'DATE':
-                                 case 'DATE2DATE':
-                                     return scope.msg('task.dateManipulation', '');
-                             }
-                             return null;
-                          },
-                          html: true,
-                          content: '<manipulation-sorter type="'+scope.manipulationType+'" />', // I'd rather compile here...
-                          placement: "auto left",
-                          trigger: 'manual'
-                        }).on('shown.bs.popover', function(event){
-                          var popoverContent = $('.popover-content',$(event.target).next('.popover'))[0];
-                          $compile(popoverContent)(scope);
-                        }).popover('show');
-                    }
+                    showPopup();
                 });
             }
         };
@@ -509,7 +522,7 @@
 
 
                 this.addManipulation = function (type, argument) {
-                    if(!argument) argument = false;
+                    if(!argument) argument = "";
                     $scope.manipulations.push({
                         type: type,
                         argument: argument

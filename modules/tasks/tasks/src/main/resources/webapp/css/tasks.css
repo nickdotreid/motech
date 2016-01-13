@@ -33,6 +33,32 @@
     font-size: 1.2em;
 }
 
+.tasks .field-bubble{
+    display: inline-block;
+    min-width: 10px;
+    padding: 3px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: #777;
+    border-radius: 10px;
+}
+.tasks .field-trigger{
+    background-color: #3a87ad;
+}
+.tasks .field-ad{
+    background-color: #f89406;
+}
+
+manipulation-sorter ol.sortable li.ui-state-highlight{
+    list-style: none;
+    height: 15px;
+}
+
 .tasks .manipulation{
     display: block;
     position:relative;
@@ -43,7 +69,7 @@
     border-radius: 3px;
     background-color: #F4F4F4;
     padding: 2px 6px;
-    margin: 2px 2px 2px 25px;
+    margin: 2px 2px 2px 2px;
 }
 
 .tasks .manipulation:hover {
