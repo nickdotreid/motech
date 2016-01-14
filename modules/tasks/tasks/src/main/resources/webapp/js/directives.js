@@ -203,6 +203,10 @@
             restrict: 'EA',
             require: '?ngModel',
             templateUrl: '../tasks/partials/form-filter-set.html',
+            controller: function () {
+                // set filters default to []
+                // set operator default to "AND"
+            },
             link: function(scope, element, attrs, ngModel) {
                 //
             }

@@ -498,16 +498,11 @@
             var data = {};
             switch(type){
                 case 'filter':
-                    data = {
-                       '@type': 'FilterSet',
-                       filters: [],
-                       operator: "AND",
-                    };
+                    data['@type'] = ManageTaskUtils.FILTER_SET_STEP;
                     break;
                 case 'data':
-                    data = {
-                        '@type': 'DataSource'
-                    };
+                    data['@type'] = ManageTaskUtils.DATA_SOURCE_STEP;
+                    break;
             }
             $scope.task.taskConfig.steps.push(data);
         }
@@ -628,7 +623,13 @@
             }
         };
 
-        $scope.getAvailableFields = function (dataSource) {
+        $scope.getDataSources = function (beforeStep) {
+            var dataSources = [];
+
+            return dataSources;
+        }
+
+        $scope.getFields = function (beforeStep) {
             var fields = [];
             if($scope.selectedTrigger) {
                 $scope.selectedTrigger.eventParameters.forEach(function (field) {
@@ -636,7 +637,7 @@
                     fields.push(field);
                 });
             }
-            $scope.getDataSources().forEach(function (service) {
+            $scope.getDataSources(beforeStep).forEach(function (source) {
                 var serviceObj = $scope.findObject(service.providerId, service.type);
                 if (!serviceObj || !serviceObj.fields) return false;
                 serviceObj.fields.forEach(function (field) {

@@ -7,6 +7,8 @@
         var utils = {
             TRIGGER_PREFIX: 'trigger',
             DATA_SOURCE_PREFIX: 'ad',
+            FILTER_SET_STEP: 'FilterSet',
+            DATA_SOURCE_STEP: 'DataSource',
             FILTER_OPERATORS: {
                 'task.string': {
                     'type': 'UNICODE',
