@@ -334,10 +334,6 @@
                     angular.forEach($scope.task.taskConfig.steps, function (step) {
                         var source, object;
 
-                        angular.element('#collapse-step-' + step.order).livequery(function() {
-                            $(this).collapse('hide');
-                        });
-
                         if (step['@type'] === 'DataSource') {
                             source = $scope.findDataSource(step.providerId);
                             object = $scope.util.find({
@@ -498,165 +494,43 @@
             }
         };
 
-        $scope.addFilterSet = function () {
-            var lastStep = $scope.task.taskConfig.steps.last();
+        $scope.addStep = function (type) {
+            var data = {};
+            switch(type){
+                case 'filter':
+                    data = {
+                       '@type': 'FilterSet',
+                       filters: [],
+                       operator: "AND",
+                    };
+                    break;
+                case 'data':
+                    data = {
+                        '@type': 'DataSource'
+                    };
+            }
+            $scope.task.taskConfig.steps.push(data);
+        }
 
-            $scope.task.taskConfig.steps.push({
-                '@type': 'FilterSet',
-                filters: [],
-                operator: "AND",
-                order: (lastStep && lastStep.order + 1) || 0
-            });
-        };
-
-        $scope.removeFilterSet = function (data) {
-            var removeFilterSetSelected = function (data) {
+        $scope.removeStep = function (data) {
+            var remove = function () {
                 $scope.task.taskConfig.steps.removeObject(data);
 
-                if (!$scope.$$phase) {
+                if (!$scope.$$phase) { // can I remove this? plz?
                     $scope.$apply($scope.task);
                 }
             };
 
-            if (data.filters !== undefined && data.filters.length > 0) {
+            if (true) { // make sure object is non-empty
+                //'task.confirm.dataSource'
                 motechConfirm('task.confirm.filterSet', "task.header.confirm", function (val) {
                     if (val) {
-                        removeFilterSetSelected(data);
+                        remove(data);
                     }
                 });
             } else {
-                removeFilterSetSelected(data);
+                remove();
             }
-        };
-
-        $scope.addFilter = function (filterSet) {
-            filterSet.filters.push({});
-        };
-
-        $scope.removeFilter = function (filterSet, filter) {
-            filterSet.filters.removeObject(filter);
-        };
-
-        $scope.addDataSource = function () {
-            var sources = $scope.getDataSources(),
-                lastStep = $scope.task.taskConfig.steps.last(),
-                last;
-
-            last = sources && sources.last();
-
-            $scope.task.taskConfig.steps.push({
-                '@type': 'DataSource',
-                objectId: (last && last.objectId + 1) || 0,
-                order: (lastStep && lastStep.order + 1) || 0
-            });
-
-            if (!$scope.$$phase) {
-                $scope.$apply($scope.task);
-            }
-        };
-
-        $scope.removeData = function (dataSource) {
-            if (dataSource.type !== undefined || (dataSource.providerName !== undefined && dataSource.providerName !== '')) {
-                motechConfirm('task.confirm.dataSource', "task.header.confirm", function (val) {
-                    if (val) {
-                        $scope.task.taskConfig.steps.removeObject(dataSource);
-
-                        if (!$scope.$$phase) {
-                            $scope.$apply($scope.task);
-                        }
-                    }
-                });
-            } else {
-                $scope.task.taskConfig.steps.removeObject(dataSource);
-
-                if (!$scope.$$phase) {
-                    $scope.$apply($scope.task);
-                }
-            }
-        };
-
-        $scope.getDataSources = function () {
-            if ($scope.task.taskConfig === undefined) {
-                return;
-            }
-            return $scope.util.find({
-                where: $scope.task.taskConfig.steps,
-                by: [{
-                    what: '@type',
-                    equalTo: 'DataSource'
-                }],
-                unique: false
-            });
-        };
-
-        $scope.findDataSource = function (providerId) {
-            return $scope.util.find({
-                where: $scope.dataSources,
-                by: {
-                    what: 'id',
-                    equalTo: providerId
-                }
-            });
-        };
-
-        $scope.findObject = function (providerId, type, id) {
-            var dataSource = $scope.findDataSource(providerId),
-                by,
-                found;
-
-            if (dataSource) {
-                by = [];
-
-                if (type) {
-                    by.push({ what: 'type', equalTo: type });
-                }
-
-                if (id) {
-                    by.push({ what: 'id', equalTo: id});
-                }
-
-                found = $scope.util.find({
-                    where: dataSource.objects,
-                    by: by
-                });
-            }
-
-            return found;
-        };
-
-        $scope.selectDataSource = function (dataSource, selected) {
-            if (dataSource.providerId) {
-                motechConfirm('task.confirm.changeDataSource', 'task.header.confirm', function (val) {
-                    if (val) {
-                        dataSource.name = '';
-                        $scope.util.dataSource.select($scope, dataSource, selected);
-                    }
-                });
-            } else {
-                $scope.util.dataSource.select($scope, dataSource, selected);
-            }
-        };
-
-        $scope.selectObject = function (object, selected) {
-            if (object.type) {
-                motechConfirm('task.confirm.changeObject', 'task.header.confirm', function (val) {
-                    if (val) {
-                        object.name = '';
-                        $scope.util.dataSource.selectObject($scope, object, selected);
-                    }
-                });
-            } else {
-                $scope.util.dataSource.selectObject($scope, object, selected);
-            }
-        };
-
-        $scope.selectLookup = function(data, lookup) {
-            data.lookup = [];
-            data.name=lookup.displayName;
-            angular.forEach(lookup.fields, function(lookupField) {
-                data.lookup.push({field:lookupField, value:''});
-            });
-
         };
 
         $scope.save = function (enabled) {
@@ -738,57 +612,6 @@
             }
         };
 
-        $scope.actionCssClassWarning = function(prop) {
-            var value, expression = false;
-
-            if ($scope.selectedTrigger !== undefined) {
-                value = prop.value === undefined ? '' : prop.value;
-                expression = $scope.hasUnknownTrigger(value);
-            }
-
-            return expression;
-        };
-
-        $scope.actionCssClassError = function (prop) {
-            var value, expression = false, required = prop && prop.required;
-
-            if (!required || $scope.actionCssClassWarning(prop)) {
-                return expression;
-            } else if ($scope.selectedTrigger !== undefined) {
-                value = prop.value === undefined ? '' : prop.value;
-                value = $scope.refactorDivEditable(value);
-
-                expression = !value || value.length === 0 || value === "\n";
-            }
-
-            return expression;
-        };
-
-        $scope.getBooleanValue = function (value) {
-            return (value === 'true' || value === 'false') ? null : value;
-        };
-
-        $scope.setBooleanValue = function (action, index, value) {
-            $scope.filter($scope.selectedAction[action].actionParameters, {hidden: false})[index].value = $scope.util.createBooleanSpan($scope, value);
-        };
-
-        $scope.checkedBoolean = function (action, index, val) {
-            var prop = $scope.filter($scope.selectedAction[action].actionParameters, {hidden: false})[index],
-                value = $scope.refactorDivEditable(prop.value === undefined ? '' : prop.value);
-
-            return value === val;
-        };
-
-        $scope.getTaskValidationError = function (error) {
-            var array = [], i;
-
-            for (i = 0; i < error.args.length; i += 1) {
-                array.push($scope.msg(error.args[i]));
-            }
-
-            return $scope.msg(error.message, array);
-        };
-
         $scope.showHelp = function () {
             $('#helpModalDate').modal();
         };
@@ -805,7 +628,7 @@
             }
         };
 
-        $scope.getAvailableFields = function (dataSource) { // not doing anything with this
+        $scope.getAvailableFields = function (dataSource) {
             var fields = [];
             if($scope.selectedTrigger) {
                 $scope.selectedTrigger.eventParameters.forEach(function (field) {

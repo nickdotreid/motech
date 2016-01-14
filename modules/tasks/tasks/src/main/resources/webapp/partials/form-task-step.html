@@ -1,0 +1,23 @@
+<div class="panel-group task-group" id="step-{{step.order}}">
+
+    <div class="panel-heading panel-header clearfix">
+        <div class="pull-right">
+            <button ng-click="remove()" class="btn btn-remove remove">
+                Remove
+            </button>
+        </div>
+        <a class="accordion-toggle cursor-auto">
+            <i class="fa fa-fw fa-lg fa-caret-down pointer" data-toggle="collapse" data-parent="#data-source-{{step.order}}" target="_self" href="#collapse-step-{{step.order}}"></i> {{msg('task.subsection.data')}}
+                                        <span ng-hide="!step.displayName">
+                                            &raquo; {{taskMsg(step.providerName)}} : {{taskMsg(step.displayName)}}
+                                        </span>
+                                        <span ng-hide="!step.name">
+                                            {{msg('task.by')}} {{taskMsg(step.name)}}
+                                        </span>
+        </a>
+    </div>
+    <div id="collapse-step-{{step.order}}" class="panel-collapse stripes-bg collapse in overflowChange">
+        <div ng-if="step['@type']=='DataSource'" task-data-source ng-model="step" class="panel-body inside"></div>
+        <div ng-if="step['@type']=='FilterSet'" task-filter-set ng-model="step" class="panel-body inside"></div>
+    </div>
+</div>

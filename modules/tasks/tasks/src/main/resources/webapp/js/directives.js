@@ -161,51 +161,53 @@
         };
     });
 
-
-    directives.directive('overflowChange', function () {
+    directives.directive('taskStep', function () {
         return {
-            restrict: 'A',
+            restrict: 'EA',
+            replace: true,
+            scope: {
+                step: "=",
+                index: "=",
+                remove: "&"
+            },
             link: function (scope, element, attrs) {
-                $(element).find('.overflowChange').livequery(function () {
-                    $(this).on({
-                        shown: function (e) {
-                            if (!e.target.classList.contains("help-inline")) {
-                                $(this).css('overflow', 'visible');
-                            }
-                        },
-                        hide: function (e) {
-                            if (!e.target.classList.contains("help-inline")) {
-                                $(this).css('overflow', 'hidden');
-                            }
-                        }
-                    });
-                });
-            }
-        };
+                // nothing much to do here?
+            },
+            templateUrl: '../tasks/partials/form-task-step.html'
+        }
     });
 
-    directives.directive('expandAccordion', function () {
+    directives.directive('taskDataSource', function () {
         return {
-            restrict: 'A',
-            link: function (scope, element, attrs) {
-                $('.panel-group').on('show.bs.collapse', function (e) {
-                    $(e.target).siblings('.panel-heading').find('.accordion-toggle i.fa-caret-right').removeClass('fa-caret-right').addClass('fa-caret-down');
-                });
+            restrict: 'EA',
+            require: '?ngModel',
+            templateUrl: '../tasks/partials/form-data-source.html',
+            controller: ['$scope', function ($scope) {
+                // Set default data settings?
 
-                $('.tasks-list').on('show.bs.collapse', function (e) {
-                    $(e.target).siblings('.panel-heading').find('.accordion-toggle i.fa-caret-right').removeClass('fa-caret-right').addClass('fa-caret-down');
-                });
+                // findDataSource
+                // set $scope.dataSource
 
-                $('.panel-group').on('hide.bs.collapse', function (e) {
-                    $(e.target).siblings('.panel-heading').find('.accordion-toggle i.fa-caret-down').removeClass('fa-caret-down').addClass('fa-caret-right');
-                });
+                // selectObject
+                // selectLookup
 
-                $('.tasks-list').on('hide.bs.collapse', function (e) {
-                    $(e.target).siblings('.panel-heading').find('.accordion-toggle i.fa-caret-down').removeClass('fa-caret-down').addClass('fa-caret-right');
-                });
+            }],
+            link: function(scope, element, attrs, ngModel) {
+                //
             }
-        };
+        }
     });
+
+    directives.directive('taskFilterSet', function () {
+        return {
+            restrict: 'EA',
+            require: '?ngModel',
+            templateUrl: '../tasks/partials/form-filter-set.html',
+            link: function(scope, element, attrs, ngModel) {
+                //
+            }
+        }
+    })
 
     directives.directive('field', function () {
         return {

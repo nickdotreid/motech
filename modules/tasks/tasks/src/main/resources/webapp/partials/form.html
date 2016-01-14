@@ -38,17 +38,14 @@
                 <div ng-include="'../tasks/partials/form-trigger.html'"></div>
 
                 <div ng-hide="!task.trigger.subject">
-                    <div ng-repeat="step in task.taskConfig.steps">
-                        <div ng-include="'../tasks/partials/form-filter.html'"></div>
-                        <div ng-include="'../tasks/partials/form-data-source.html'"></div>
-                    </div>
+                    <div ng-repeat="step in task.taskConfig.steps" task-step step="step" index="$index" remove="removeStep(step)"></div>
 
                     <!------------------------ ADDING BUTTONS ------------------------>
                     <div class="row inside section-additives">
                         <div class="form-group centered">
                             <div class="btn-group">
-                                <button class="btn btn-warning" ng-click="addFilterSet()"><i class="fa fa-plus"></i> {{msg('task.button.addFilterSet')}}</button>
-                                <button ui-if="dataSources != undefined && dataSources.length != 0" class="btn btn-warning" ng-click="addDataSource()"><i class="fa fa-plus"></i> {{msg('task.button.addDataSource')}}</button>
+                                <button class="btn btn-add" ng-click="addStep('filter')">{{msg('task.button.addFilterSet')}}</button>
+                                <button ui-if="dataSources != undefined && dataSources.length != 0" class="btn btn-add" ng-click="addStep('data')">{{msg('task.button.addDataSource')}}</button>
                             </div>
                         </div>
                     </div>
