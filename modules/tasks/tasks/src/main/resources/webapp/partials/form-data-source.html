@@ -21,10 +21,7 @@
             <div class="form-group control-section">
                 <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
                 <div class="form-inline col-md-10 col-sm-9 move-element">
-                    <field ng-repeat="i in selectedTrigger.eventParameters" field="i" draggable />​
-                                                <span ng-repeat="ds in getDataSources() | idLessThan:step.objectId">
-                                                    <field ng-repeat="i in findObject(ds.providerId, ds.type).fields" draggable />
-                                                </span>
+                    <field ng-repeat="field in getAvailableFields(step)" field="field" draggable />​
                 </div>
             </div>
             <div class="form-group">
@@ -112,7 +109,7 @@
             <div class="form-group margin-before3 control-section" ng-hide="step.displayName == undefined">
                 <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.subsubsection.objectFields')}}</label>
                 <div class="form-inline col-md-10 col-sm-9 move-element">
-                    <field ng-repeat="field in findObject(step.providerId, step.type).fields" class="badge badge-warning">{{taskMsg(field.displayName)}}</field>​
+                    <field ng-repeat="field in findObject(step.providerId, step.type).fields" field="field" >{{taskMsg(field.displayName)}}</field>​
                 </div>
             </div>
         </div>
