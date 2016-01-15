@@ -17,7 +17,6 @@
         </a>
     </div>
     <div id="collapse-step-{{step.order}}" class="panel-collapse stripes-bg collapse in overflowChange">
-        <div ng-if="step['@type']=='DataSource'" task-data-source ng-model="step" class="panel-body inside"></div>
-        <div ng-if="step['@type']=='FilterSet'" task-filter-set ng-model="step" class="panel-body inside"></div>
+        <div class="panel-body inside" ng-transclude></div>
     </div>
 </div>

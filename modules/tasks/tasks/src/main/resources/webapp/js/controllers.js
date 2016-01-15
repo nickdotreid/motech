@@ -274,10 +274,10 @@
     });
 
     controllers.controller('TasksManageCtrl', function ($scope, ManageTaskUtils, Channels, DataSources, Tasks, $q, $timeout, $routeParams, $http, $compile, $filter) {
-        $scope.util = ManageTaskUtils;
+        $scope.util = ManageTaskUtils; // Should call directly to avoid confusion?
         $scope.selectedActionChannel = [];
         $scope.selectedAction = [];
-        $scope.task = {
+        $scope.task = { // Should be defined in factory?
             taskConfig: {
                 steps: []
             }
@@ -293,7 +293,10 @@
 
         blockUI();
 
-        $q.all([$scope.util.doQuery($q, Channels), $scope.util.doQuery($q, DataSources)]).then(function(data) {
+        $q.all([
+            $scope.util.doQuery($q, Channels),
+            DataSources.load()
+        ]).then(function(data) {
             blockUI();
 
             $scope.channels = data[0];

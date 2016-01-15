@@ -165,13 +165,10 @@
         return {
             restrict: 'EA',
             replace: true,
+            transclude: true,
             scope: {
                 step: "=",
-                index: "=",
                 remove: "&"
-            },
-            link: function (scope, element, attrs) {
-                // nothing much to do here?
             },
             templateUrl: '../tasks/partials/form-task-step.html'
         }
@@ -180,16 +177,78 @@
     directives.directive('taskDataSource', function () {
         return {
             restrict: 'EA',
-            require: '?ngModel',
+            scope: {
+                step:'='
+            },
             templateUrl: '../tasks/partials/form-data-source.html',
-            controller: ['$scope', function ($scope) {
-                // Set default data settings?
+            controller: ['$scope', 'DataSources', function ($scope, DataSources) {
+                $scope.msg = $scope.$parent.msg;
+                $scope.dataSources = DataSources.get();
 
-                // findDataSource
-                // set $scope.dataSource
+                // Defaults
+                $scope.source = false;
+                $scope.object = false;
+                $scope.lookup = false;
+                $scope.failIfDataNotFound = false;
 
-                // selectObject
-                // selectLookup
+                if (!$scope.fields) $scope.fields = [];
+
+                // LOAD Source, Object & Lookup data
+
+                $scope.$watch('source', function (newSource) {
+                    if(!newSource){
+                        delete $scope.step.providerId;
+                    } else {
+                        $scope.step.providerName = newSource.name; // if this is just used for display, remove
+                        $scope.step.providerId = newSource.id;
+                    }
+                    // reset defaults...
+                    $scope.object = false;
+                });
+
+                $scope.$watch('object', function (newObject) {
+                    if (!newObject) {
+                        delete $scope.step.type;
+                        delete $scope.fields;
+                    } else {
+                        $scope.step.displayName = newObject.displayName; // if this is just used for display, remove
+                        $scope.step.type = newObject.type;
+                        $scope.fields = newObject.fields;
+                    }
+                    $scope.lookup = false;
+                    $scope.failIfDataNotFound = false;
+                });
+
+                $scope.$watch('lookup', function (newLookup) {
+                    if(!newLookup) {
+                        delete $scope.step.lookup;
+                    } else {
+                        $scope.step.lookup = [];
+                        newLookup.fields.forEach(function (field) {
+                            $scope.step.lookup.push({
+                                field: field,
+                                value: '' // default...
+                            });
+                        });
+                    }
+                });
+
+                $scope.$watch('failIfDataNotFound', function(newValue) {
+                    $scope.step.failIfDataNotFound = newValue;
+                });
+
+                $scope.selectDataSource = function (source) {
+                    // modal to confirm change...
+                    $scope.source = source;
+                }
+
+                $scope.selectObject = function (object) {
+                    // modal to confirm change...
+                    $scope.object = object;
+                };
+                $scope.selectLookup = function (lookup) {
+                    $scope.lookup = lookup;
+                };
 
             }],
             link: function(scope, element, attrs, ngModel) {
@@ -253,15 +312,13 @@
     });
 
 
-    directives.directive('droppable', function (ManageTaskUtils, $compile) {
+    directives.directive('droppable', function () {
         return {
             restrict: 'A',
-            require: '?ngModel',
-            link: function (scope, element, attrs, ngModel) {
+            link: function (scope, element, attrs) {
                 element.droppable({
                     drop: function (event, ui) {
                         var field = ui.draggable.data('value'); // Gross way to get the data...
-                        var fieldString = ManageTaskUtils.formatField(field);
                         scope.$emit('field.dropped', field);
                     }
                 });

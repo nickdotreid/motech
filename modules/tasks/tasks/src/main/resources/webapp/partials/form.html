@@ -34,13 +34,17 @@
                     </div>
                 </div>
 
-                <!------------------ SELECT TRIGGER ------------------>
+                <!------------------------ SELECT TRIGGER ------------------------>
                 <div ng-include="'../tasks/partials/form-trigger.html'"></div>
 
+                <!------------------------ SHOW STEPS ------------------------>
                 <div ng-hide="!task.trigger.subject">
-                    <div ng-repeat="step in task.taskConfig.steps" task-step step="step" index="$index" remove="removeStep(step)"></div>
+                    <div ng-repeat="step in task.taskConfig.steps" task-step step="step" index="$index" remove="removeStep(step)">
+                        <div ng-if="step['@type']=='DataSource'" task-data-source step="step" class="panel-body inside" data-sources="dataSources"></div>
+                        <div ng-if="step['@type']=='FilterSet'" task-filter-set ng-model="step" class="panel-body inside"></div>
+                    </div>
 
-                    <!------------------------ ADDING BUTTONS ------------------------>
+                    <!------------------------ ADD STEPS BUTTONS ------------------------>
                     <div class="row inside section-additives">
                         <div class="form-group centered">
                             <div class="btn-group">
@@ -50,8 +54,10 @@
                         </div>
                     </div>
 
+                    <!------------------------ SHOW ACTIONS ------------------------>
                     <div ng-include="'../tasks/partials/form-action.html'"></div>
-                    <!------------------------ ADDING BUTTONS ------------------------>
+
+                    <!------------------------ ADD ACTIONS BUTTONS ------------------------>
                     <div class="row inside section-additives">
                         <div class="form-group centered">
                             <div class="btn-group">
