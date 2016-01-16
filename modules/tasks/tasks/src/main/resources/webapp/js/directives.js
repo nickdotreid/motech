@@ -180,12 +180,12 @@
             scope: {
                 step:'=',
                 index: '=',
+                dataSources: '=sources',
                 availableFieldsFn: '&'
             },
             templateUrl: '../tasks/partials/form-data-source.html',
-            controller: ['$scope', 'DataSources', 'ManageTaskUtils', function ($scope, DataSources, ManageTaskUtils) {
+            controller: ['$scope', 'DataSources', 'ManageTaskUtils', function ($scope, ManageTaskUtils) {
                 $scope.msg = $scope.$parent.msg;
-                $scope.dataSources = DataSources.get();
 
                 // Defaults
                 $scope.source = false;
