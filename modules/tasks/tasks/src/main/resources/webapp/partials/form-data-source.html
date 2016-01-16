@@ -1,44 +1,47 @@
 <div >
-<div class="form-group control-section">
-    <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
-    <div class="form-inline col-md-10 col-sm-9 move-element">
-        <field ng-repeat="field in availableFields(step)" field="field" draggable />​
+    <div class="form-group control-section">
+        <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
+        <div class="form-inline col-md-10 col-sm-9 move-element">
+            <field ng-repeat="field in availableFields" field="field" draggable />​
+        </div>
     </div>
-</div>
-<div class="form-group">
-    <span class="col-md-2 col-sm-3 control-label">{{msg('task.subsubsection.source')}}:</span>
-    <div class="btn-group offset-15">
-        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#">
-            {{msg(source.name || 'task.select')}}
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-            <li ng-repeat="dataSource in dataSources">
-                <a ng-click="selectDataSource(dataSource)">{{msg(dataSource.name)}}</a>
-            </li>
-        </ul>
-    </div>
-    <span class="offset-4">{{msg('task.subsubsection.object')}}:</span>
-    <div class="btn-group offset-15">
-        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#" ng-init="searchData.displayName='' " ng-click="searchData.displayName='' ">
-            {{msg(object.displayName || 'task.select')}}
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-            <li class="search-data-source" ng-show="source.objects && source.objects.length &gt; 8" task-stop-propagation>
-                <input class="form-control" type="text" ng-model="searchData.displayName" placeholder="{{msg('task.placeholder.searchData')}}">
-            </li>
-            <li>
-                <ul class="select-limit">
-                    <li ng-repeat="object in source.objects | filter:searchData">
-                        <a ng-click="selectObject(object)">{{msg(object.displayName)}}</a>
+
+    <div class="form-group">
+        <span class="col-md-2 col-sm-3 control-label">{{msg('task.subsubsection.source')}}:</span>
+        <div class="btn-group offset-15">
+            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#">
+                {{msg(source.name || 'task.select')}}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li ng-repeat="dataSource in dataSources">
+                    <a ng-click="selectDataSource(dataSource)">{{msg(dataSource.name)}}</a>
+                </li>
+            </ul>
+        </div>
+        <span ng-if="source">
+            <span class="offset-4">{{msg('task.subsubsection.object')}}:</span>
+            <div class="btn-group offset-15">
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#" ng-click="searchData.displayName='' ">
+                    {{msg(object.displayName || 'task.select')}}
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li class="search-data-source" ng-show="source.objects && source.objects.length &gt; 8" task-stop-propagation>
+                        <input class="form-control" type="text" ng-model="searchData.displayName" placeholder="{{msg('task.placeholder.searchData')}}">
+                    </li>
+                    <li>
+                        <ul class="select-limit">
+                            <li ng-repeat="object in source.objects | filter:searchData">
+                                <a ng-click="selectObject(object)">{{msg(object.displayName)}}</a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
-            </li>
-        </ul>
+            </div>
+        </span>
     </div>
-</div>
-<div>
+
     <div class="form-group" ui-if="object">
         <span class="col-md-2 col-sm-3 control-label">{{msg('task.subsubsection.lookup')}}:</span>
         <div class="btn-group offset-15">
@@ -62,36 +65,37 @@
             </div>
         </div>
     </div>
-</div>
-<div class="form-group" ui-if="object">
-    <span class="col-md-2 col-sm-3 control-label">{{msg('task.subsubsection.failIfDataNotFound')}}</span>
-    <div class="form-inline col-md-10 col-sm-9">
-        <div class="checkbox">
-            <input type="checkbox" ng-model="failIfDataNotFound"/>
+
+    <div class="form-group" ui-if="object">
+        <span class="col-md-2 col-sm-3 control-label">{{msg('task.subsubsection.failIfDataNotFound')}}</span>
+        <div class="form-inline col-md-10 col-sm-9">
+            <div class="checkbox">
+                <input type="checkbox" ng-model="failIfDataNotFound"/>
+            </div>
         </div>
     </div>
-</div>
-    <!-- NOT SURE WHAT THIS DOES -->
-<div ui-if="step.lookup.field">
-    <div class="form-group" ng-class="{'has-error': actionCssClass(step.lookup)}" class="form-group form-inline clearfix">
-        <label class="col-md-2 col-sm-3 control-label">{{taskMsg(step.lookup.field)}}</label>
 
-        <!------------------------ Editable fields ------------------------>
-        <div  class="form-inline col-md-10 col-sm-9">
-            <editable-content data="step.lookup" index="$index" type="UNICODE"> </editable-content>
+        <!-- NOT SURE WHAT THIS DOES -->
+    <div ui-if="step.lookup.field">
+        <div class="form-group" ng-class="{'has-error': actionCssClass(step.lookup)}" class="form-group form-inline clearfix">
+            <label class="col-md-2 col-sm-3 control-label">{{taskMsg(step.lookup.field)}}</label>
+
+            <!------------------------ Editable fields ------------------------>
+            <div  class="form-inline col-md-10 col-sm-9">
+                <editable-content data="step.lookup" index="$index" type="UNICODE"> </editable-content>
+            </div>
+
         </div>
-
+        <div class="form-group">
+            <a target="_self" href="#helpModalFieldSyntaxWithBrackets" role="button" class="btn btn-primary pull-left" data-toggle="modal">{{msg('task.help')}}</a>
+        </div>
     </div>
-    <div class="form-group">
-        <a target="_self" href="#helpModalFieldSyntaxWithBrackets" role="button" class="btn btn-primary pull-left" data-toggle="modal">{{msg('task.help')}}</a>
-    </div>
-</div>
 
 
-<div class="form-group margin-before3 control-section" ng-if="fields">
-    <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.subsubsection.objectFields')}}</label>
-    <div class="form-inline col-md-10 col-sm-9 move-element">
-        <field ng-repeat="field in fields" field="field" ></field>​
+    <div class="form-group margin-before3 control-section" ng-if="fields">
+        <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.subsubsection.objectFields')}}</label>
+        <div class="form-inline col-md-10 col-sm-9 move-element">
+            <field ng-repeat="field in fields" field="field" ></field>​
+        </div>
     </div>
-</div>
 </div>

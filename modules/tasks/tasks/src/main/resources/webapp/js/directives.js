@@ -178,7 +178,9 @@
         return {
             restrict: 'EA',
             scope: {
-                step:'='
+                step:'=',
+                index: '=',
+                availableFieldsFn: '&'
             },
             templateUrl: '../tasks/partials/form-data-source.html',
             controller: ['$scope', 'DataSources', function ($scope, DataSources) {
@@ -194,6 +196,8 @@
                 if (!$scope.fields) $scope.fields = [];
 
                 // LOAD Source, Object & Lookup data
+
+                $scope.availableFields = $scope.availableFieldsFn();
 
                 $scope.$watch('source', function (newSource) {
                     if(!newSource){

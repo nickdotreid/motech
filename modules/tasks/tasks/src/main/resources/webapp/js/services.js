@@ -25,8 +25,23 @@
         var sources;
 
         this.get = function () {
-            if(sources) return sources;
-            return []; //return empty array?
+            if(!sources) return false;
+            return sources;
+        };
+        this.getProvider = function (providerId) {
+            if(!sources) return false;
+            for(var provider of sources){
+                if (provider.id == providerId) return provider;
+            }
+        };
+        this.getObject = function (providerId, type) {
+            if(!sources) return false;
+            var provider = this.getProvider(providerId);
+            if(!provider) return false;
+            for (var object of provider.objects) {
+                if (object.type == type) return object;
+            }
+            return false;
         };
         this.load = function(){
             var deferred = $q.defer();

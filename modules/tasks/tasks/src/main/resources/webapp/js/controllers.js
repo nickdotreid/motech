@@ -334,29 +334,6 @@
                         }
                     }
 
-                    angular.forEach($scope.task.taskConfig.steps, function (step) {
-                        var source, object;
-
-                        if (step['@type'] === 'DataSource') {
-                            source = $scope.findDataSource(step.providerId);
-                            object = $scope.util.find({
-                                where: source.objects,
-                                by: {
-                                    what: 'type',
-                                    equalTo: step.type
-                                }
-                            });
-
-                            if (source && object) {
-                                step.providerName = source.name;
-                                step.displayName = object.displayName;
-                                angular.forEach(step.lookup, function(lookupField) {
-                                    lookupField.value = $scope.util.convertToView($scope, 'UNICODE', lookupField.value);
-                                });
-                            }
-                        }
-                    });
-
                     angular.forEach($scope.task.actions, function (info, idx) {
                         var action = null, actionBy = [];
 
@@ -499,15 +476,16 @@
 
         $scope.addStep = function (type) {
             var data = {};
-            switch(type){
-                case 'filter':
-                    data['@type'] = ManageTaskUtils.FILTER_SET_STEP;
-                    break;
-                case 'data':
-                    data['@type'] = ManageTaskUtils.DATA_SOURCE_STEP;
-                    break;
-            }
+            data['@type'] = type;
             $scope.task.taskConfig.steps.push(data);
+        }
+
+        $scope.addFilterSet = function () {
+            $scope.addStep(ManageTaskUtils.FILTER_SET_STEP);
+        }
+
+        $scope.addDataSource = function () {
+            $scope.addStep(ManageTaskUtils.DATA_SOURCE_STEP);
         }
 
         $scope.removeStep = function (data) {
@@ -640,13 +618,16 @@
                     fields.push(field);
                 });
             }
-            $scope.getDataSources(beforeStep).forEach(function (source) {
-                var serviceObj = $scope.findObject(service.providerId, service.type);
+            if (!$scope.task.taskConfig.steps) return fields;
+            $scope.task.taskConfig.steps.forEach(function (step, index) {
+                if(step['@type'] != ManageTaskUtils.DATA_SOURCE_STEP) return false;
+                if(beforeStep <= index) return false;
+                var serviceObj = DataSources.getObject(step.providerId, step.type);
                 if (!serviceObj || !serviceObj.fields) return false;
                 serviceObj.fields.forEach(function (field) {
                     field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
-                    field.providerName = service.providerName;
-                    field.objectId = serviceObj.id;
+                    field.providerName = serviceObj.providerName;
+                    field.objectId = serviceObj.id; //Not sure about this....
                     fields.push(field);
                 });
             });
