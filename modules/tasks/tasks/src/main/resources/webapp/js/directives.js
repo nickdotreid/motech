@@ -183,7 +183,7 @@
                 availableFieldsFn: '&'
             },
             templateUrl: '../tasks/partials/form-data-source.html',
-            controller: ['$scope', 'DataSources', function ($scope, DataSources) {
+            controller: ['$scope', 'DataSources', 'ManageTaskUtils', function ($scope, DataSources, ManageTaskUtils) {
                 $scope.msg = $scope.$parent.msg;
                 $scope.dataSources = DataSources.get();
 
@@ -192,12 +192,20 @@
                 $scope.object = false;
                 $scope.lookup = false;
                 $scope.failIfDataNotFound = false;
+                $scope.fields = false;
 
                 if (!$scope.fields) $scope.fields = [];
 
                 // LOAD Source, Object & Lookup data
+                var getAvailableFields = function() {
+                    $scope.availableFields = $scope.availableFieldsFn();
+                };
+                $scope.$on('fields.changed', getAvailableFields);
+                getAvailableFields();
 
-                $scope.availableFields = $scope.availableFieldsFn();
+                $scope.$watch('fields', function(newFields){
+                    $scope.$emit('fields.changed');
+                });
 
                 $scope.$watch('source', function (newSource) {
                     if(!newSource){
@@ -206,8 +214,7 @@
                         $scope.step.providerName = newSource.name; // if this is just used for display, remove
                         $scope.step.providerId = newSource.id;
                     }
-                    // reset defaults...
-                    $scope.object = false;
+                    $scope.object = false; // reset dependants
                 });
 
                 $scope.$watch('object', function (newObject) {
@@ -215,7 +222,6 @@
                         delete $scope.step.type;
                         delete $scope.fields;
                     } else {
-                        $scope.step.displayName = newObject.displayName; // if this is just used for display, remove
                         $scope.step.type = newObject.type;
                         $scope.fields = newObject.fields;
                     }

@@ -604,12 +604,6 @@
             }
         };
 
-        $scope.getDataSources = function (beforeStep) {
-            var dataSources = [];
-
-            return dataSources;
-        }
-
         $scope.getFields = function (beforeStep) {
             var fields = [];
             if($scope.selectedTrigger) {
@@ -633,6 +627,11 @@
             });
             return fields;
         }
+        $scope.$on('fields.changed', function(event) {
+            if (event.targetScope == $scope) return;
+            if (event.stopPropagation) event.stopPropagation();
+            $scope.$broadcast('fields.changed');
+        });
     });
 
     controllers.controller('TasksLogCtrl', function ($scope, Tasks, Activities, $routeParams, $filter) {
