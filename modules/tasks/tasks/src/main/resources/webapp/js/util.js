@@ -9,6 +9,8 @@
             DATA_SOURCE_PREFIX: 'ad',
             FILTER_SET_STEP: 'FilterSet',
             DATA_SOURCE_STEP: 'DataSource',
+            FILTER_OPERATOR_AND: 'AND',
+            FILTER_OPERATOR_OR: 'OR',
             FILTER_OPERATORS: {
                 'task.string': {
                     'type': 'UNICODE',

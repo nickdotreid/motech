@@ -270,17 +270,52 @@
     directives.directive('taskFilterSet', function () {
         return {
             restrict: 'EA',
-            require: '?ngModel',
             templateUrl: '../tasks/partials/form-filter-set.html',
-            controller: function () {
-                // set filters default to []
-                // set operator default to "AND"
+            scope: {
+                filterSet: '=ngModel',
+                dataSources: '=sources',
+                availableFieldsFn: '&'
             },
-            link: function(scope, element, attrs, ngModel) {
-                //
+            controller: ['$scope', 'ManageTaskUtils', function ($scope, ManageTaskUtils) {
+                // Set defaults...
+                $scope.filters = $scope.filterSet.filters || [];
+
+                $scope.or_operator = null;
+                if($scope.filterSet.operator == ManageTaskUtils.FILTER_OPERATOR_AND) $scope.or_operator = false;
+                if($scope.filterSet.operator == ManageTaskUtils.FILTER_OPERATOR_OR) $scope.or_operator = true;
+
+                $scope.addFilter = function () {
+                    $scope.filters.push({});
+                }
+                $scope.removeFilter = function (index) {
+                    $scope.filters.splice(index, 1);
+                }
+
+                $scope.$watch('filters', function(newFilters) {
+                    $scope.filterSet.filters = newFilters;
+                });
+
+                $scope.$watch('or_operator', function(newValue) {
+                    if(newValue) $scope.filterSet.operator = ManageTaskUtils.FILTER_OPERATOR_OR;
+                    if(!newValue) $scope.filterSet.operator = ManageTaskUtils.FILTER_OPERATOR_AND;
+                });
+            }],
+            link: function(scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
             }
         }
-    })
+    });
+
+    directives.directive('filter', function () {
+        return {
+            restrict: 'EA',
+            templateUrl: '../tasks/partials/filter.html',
+            scope: {
+                filter: '=',
+                remove: '&removeFn'
+            }
+        }
+    });
 
     directives.directive('field', function () {
         return {
