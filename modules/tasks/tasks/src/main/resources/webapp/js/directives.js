@@ -280,6 +280,12 @@
                 // Set defaults...
                 $scope.filters = $scope.filterSet.filters || [];
 
+                var getAvailableFields = function() {
+                    $scope.availableFields = $scope.availableFieldsFn();
+                };
+                $scope.$on('fields.changed', getAvailableFields);
+                getAvailableFields();
+
                 $scope.or_operator = null;
                 if($scope.filterSet.operator == ManageTaskUtils.FILTER_OPERATOR_AND) $scope.or_operator = false;
                 if($scope.filterSet.operator == ManageTaskUtils.FILTER_OPERATOR_OR) $scope.or_operator = true;
@@ -306,16 +312,103 @@
         }
     });
 
-    directives.directive('filter', function () {
+    directives.directive('filter', ['ManageTaskUtils', function (ManageTaskUtils) {
         return {
             restrict: 'EA',
+            require: 'ngModel',
+            replace: false,
             templateUrl: '../tasks/partials/filter.html',
             scope: {
-                filter: '=',
-                remove: '&removeFn'
+                remove: '&removeFn',
+                availableFields:'='
+            },
+            link: function (scope, element, attrs, ngModel) {
+                scope.msg = scope.$parent.msg;
+                // field == key
+                scope.FILTER_OPERATORS = ManageTaskUtils.FILTER_OPERATORS;
+                scope.needsExpression = ManageTaskUtils.needsExpression;
+
+                scope.$watch('field + negationOperator + operator + type + expression', function(){
+                    ngModel.$setViewValue({
+                        key: scope.field,
+                        negationOperator: scope.negationOperator,
+                        operator: scope.operator,
+                        type: scope.type,
+                        expression: scope.expression
+                    });
+                });
             }
         }
-    });
+    }]);
+
+    directives.directive('fieldInput', ['DataSources', 'ManageTaskUtils', function (DataSources, ManageTaskUtils) {
+        return {
+            restrict: 'EA',
+            require: 'ngModel',
+            replace: false,
+            templateUrl: '../tasks/partials/field-input.html',
+            scope: {
+                availableFields: '=?'
+            },
+            link: function (scope, element, attrs, ngModel) {
+                scope.msg = scope.$parent.$parent.msg; // Do this differently...
+                if (!scope.availableFields) scope.availableFields = []
+
+                var getSources = function() {
+                    var providerIds = [], providerObjs = {};
+                    for (var field of scope.availableFields) {
+                        if (field.prefix == ManageTaskUtils.TRIGGER_PREFIX) {
+                            // Get channel?
+                        }
+                        if (field.prefix == ManageTaskUtils.DATA_SOURCE_PREFIX) {
+                            if(providerIds.indexOf(field.providerId) === -1){
+                                providerIds.push(field.providerId);
+                                providerObjs[field.providerId] = {
+                                    type: field.providerType,
+                                    fields: [field]
+                                }
+                            } else {
+                                providerObjs[field.providerId].fields.push(field);
+                            }
+                        }
+                    }
+                    var providers = [];
+                    for(var providerId of providerIds) {
+                        var source = DataSources.getObject(providerId, providerObjs[providerId].type);
+                        var sourceObj = Object.assign({}, source);
+                        sourceObj.fields = providerObjs[providerId].fields;
+                        providers.push(sourceObj);
+                    }
+                    scope.dataSources = providers; // Because a listener could be watching for changes, update only once...
+                };
+                scope.$on('fields.changed', getSources);
+                getSources();
+
+                ngModel.$formatters.push(function(modelValue){
+                    var value = ManageTaskUtils.parseField(modelValue);
+                    return {
+                        displayName: value.displayName || "",
+                        manipulations: value.manipulations || []
+                    }
+                });
+
+                ngModel.$parsers.push(function (viewValue) {
+                    return ManageTaskUtils.formatField(viewValue);
+                });
+
+                ngModel.$render = function () {
+                    scope.displayName = ngModel.$viewValue.displayName;
+                    scope.manipulations = ngModel.$viewValue.manipulations;
+                };
+
+                scope.selectField = function (field) {
+                    if (scope.manipulations.length > 0) field.manipulations = scope.manipulations;
+                    scope.displayName = field.displayName;
+                    ngModel.$setViewValue(field);
+                };
+            }
+        }
+    }]);
 
     directives.directive('field', function () {
         return {

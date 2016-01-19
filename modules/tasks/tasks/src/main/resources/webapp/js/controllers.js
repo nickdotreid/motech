@@ -592,11 +592,11 @@
             $('#helpModalDate').modal();
         };
 
-        $scope.taskMsg = function(message) {
+        $scope.msg = function(message) { //Move to service?
             if (message === undefined) {
                 return "";
             }
-            message = $scope.msg(message);
+            message = $scope.$parent.msg(message);
             if (message[0] === '[' && message[message.length-1] === ']') {
                 return message.substr(1, message.length-2);
             } else {
@@ -620,8 +620,10 @@
                 if (!serviceObj || !serviceObj.fields) return false;
                 serviceObj.fields.forEach(function (field) {
                     field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
-                    field.providerName = serviceObj.providerName;
-                    field.objectId = serviceObj.id; //Not sure about this....
+                    field.providerId = step.providerId;
+                    field.providerType = step.type;
+                    field.providerName = step.providerName;
+                    field.objectId = serviceObj.id; //Not sure what this is doing..
                     fields.push(field);
                 });
             });

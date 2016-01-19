@@ -296,7 +296,7 @@
                     str = "{0}.{1}".format(utils.TRIGGER_PREFIX, field.eventKey);
                     break;
                 case utils.DATA_SOURCE_PREFIX:
-                    str = "{0}.{1}.{2}#{3}.{4}".format($scope.util.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
+                    str = "{0}.{1}.{2}#{3}.{4}".format(utils.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
                     break;
                 default:
                     str = field.displayName;

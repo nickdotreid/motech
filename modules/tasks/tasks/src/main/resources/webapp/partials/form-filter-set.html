@@ -10,7 +10,7 @@
         </label>
     </div>
     <div class="margin-center margin-before">
-        <filter ng-repeat="filter in filters" ng-model="filter" />
+        <div class="form-group centered" ng-repeat="filter in filters" filter ng-model="filter" remove-fn="removeFilter($index)" available-fields="availableFields" />
     </div>
     <div class="form-group centered">
         <a ui-if="step.filters.length" target="_self" href="#helpModalFieldSyntax" role="button" class="btn btn-primary" data-toggle="modal">{{msg('task.help')}}</a>

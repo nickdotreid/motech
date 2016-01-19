@@ -4,7 +4,7 @@
         <div class="accordion-toggle cursor-auto">
             <i class="fa fa-fw fa-lg fa-caret-down pointer" data-toggle="collapse" data-parent="#select-trigger" target="_self" href="#collapse-trigger"></i> {{msg('task.header.trigger')}}
                             <span ng-hide="!task.trigger.displayName">
-                                &raquo; {{msg(task.trigger.channelName)}} : {{taskMsg(task.trigger.displayName)}}
+                                &raquo; {{msg(task.trigger.channelName)}} : {{msg(task.trigger.displayName)}}
                             </span>
         </div>
     </div>
@@ -20,7 +20,7 @@
                                 </a>
                                 <img ng-src="../tasks/api/channel/icon?moduleName={{channel.moduleName}}&moduleVersion={{channel.moduleVersion}}" class="panel-img" />
                             </div>
-                            <span>{{taskMsg(channel.displayName)}}</span>
+                            <span>{{msg(channel.displayName)}}</span>
                             <div class="content-task popover fade in">
                                 <div class="arrow"></div>
                                 <h3 class="popover-title">{{msg('task.tooltip.availableTriggers')}}</h3>
@@ -30,7 +30,7 @@
                                 <div class="popover-content">
                                     <ul class="trigger-list">
                                         <li ng-repeat="trigger in channel.triggerTaskEvents | filter:searchTrigger">
-                                            <a ng-click="selectTrigger(channel, trigger)">{{taskMsg(trigger.displayName)}}</a>
+                                            <a ng-click="selectTrigger(channel, trigger)">{{msg(trigger.displayName)}}</a>
                                         </li>
                                     </ul>
                                 </div>

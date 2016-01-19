@@ -39,7 +39,11 @@
             var provider = this.getProvider(providerId);
             if(!provider) return false;
             for (var object of provider.objects) {
-                if (object.type == type) return object;
+                if (object.type == type){
+                    object.providerName = provider.name;
+                    object.objectId; // not sure where this comes from.
+                    return object;
+                }
             }
             return false;
         };
