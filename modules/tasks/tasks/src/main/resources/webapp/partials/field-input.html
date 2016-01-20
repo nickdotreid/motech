@@ -3,7 +3,7 @@
 </button>
 <ul class="dropdown-menu">
     <li class="dropdown-submenu" ng-repeat="source in dataSources" ng-show="source.displayName != undefined" >
-        <a tabindex="-1">{{msg(source.displayName)}}#{{source.objectId}} ({{msg(source.providerName)}})</a>
+        <a tabindex="-1">{{source.displayName}}</a>
         <ul class="dropdown-menu">
             <li ng-repeat="field in source.fields">
                 <a ng-click="selectField(field)">{{msg(field.displayName)}}</a>

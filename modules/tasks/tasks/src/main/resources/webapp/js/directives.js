@@ -374,7 +374,7 @@
                             if(providerIds.indexOf(field.triggerName) === -1){
                                 providerIds.push(field.triggerName);
                                 providerObjs[field.triggerName] = {
-                                    type: field.moduleName,
+                                    displayName: scope.msg('task.header.trigger'), // Not sure where this should actually live
                                     fields: [field]
                                 };
                             } else {
@@ -385,6 +385,11 @@
                             if(providerIds.indexOf(field.providerId) === -1){
                                 providerIds.push(field.providerId);
                                 providerObjs[field.providerId] = {
+                                    displayName: "{0}#{1} ({2})".format(
+                                        scope.msg(field.objectName),
+                                        field.objectId,
+                                        scope.msg(field.providerName)
+                                    ),
                                     type: field.providerType,
                                     fields: [field]
                                 }

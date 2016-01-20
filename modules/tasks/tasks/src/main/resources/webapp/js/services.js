@@ -51,8 +51,10 @@
             if (module && trigger) {
                 trigger.eventParameters.forEach(function (param) {
                     param.prefix = ManageTaskUtils.TRIGGER_PREFIX;
-                    param.moduleName = module.moduleName;
-                    param.tiggerName = trigger.subject;
+                    param.module = module.moduleName;
+                    param.moduleName = module.displayName;
+                    param.trigger = trigger.subject;
+                    param.triggerName = trigger.displayName;
                     parameters.push(param);
                 });
             }
