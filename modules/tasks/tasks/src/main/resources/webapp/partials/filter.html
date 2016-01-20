@@ -3,7 +3,7 @@
     <span class="validation-area form-group">
         <div class="btn-group offset-1">
             <a class="btn dropdown-toggle dropdown-small-fluid" data-toggle="dropdown" target="_self" href="#" ng-class="{'btn-danger': filter.negationOperator == undefined, 'btn-default': filter.negationOperator !== undefined}" ng-disabled="!field">
-                {{msg(((filter.negationOperator == true || filter.negationOperator == false) && 'task.info.filter.' + filter.negationOperator) || 'task.info.filter.select')}}
+                {{msg(((negationOperator == true || negationOperator == false) && 'task.info.filter.' + negationOperator) || 'task.info.filter.select')}}
                 <span class="caret"></span>
             </a>
             <ul class="dropdown-menu" ng-hide="!field">
@@ -25,15 +25,15 @@
                     <a tabindex="-1">{{msg(key)}}</a>
                     <ul class="dropdown-menu">
                         <li ng-repeat="option in value.options">
-                            <a ng-click="operator = option; type = value.type">{{msg(option)}}</a>
+                            <a ng-click="setOperator(type, option)">{{msg(option)}}</a>
                         </li>
                     </ul>
                 </li>
             </ul>
         </div>
     </span>
-    <span class="validation-area form-group" ng-class="{'has-error': needExpression(operator) && !expression}">
-        <input ng-disabled="!operator || !needExpression(operator)" ng-model="expression" class="form-control input-auto offset-1" type="text" value=""/>
+    <span class="validation-area form-group" ng-class="{'has-error': needsExpression(operator) && !expression}">
+        <input ng-disabled="!operator || !needsExpression(operator)" ng-model="expression" class="form-control input-auto offset-1" type="text" value=""/>
     </span>
     <span class="form-group">
         <a ng-click="remove()" class="btn btn-small btn-danger offset-1"><i class="fa fa-trash-o"></i></a>

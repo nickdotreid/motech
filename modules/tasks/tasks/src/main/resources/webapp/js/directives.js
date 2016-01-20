@@ -328,6 +328,18 @@
                 scope.FILTER_OPERATORS = ManageTaskUtils.FILTER_OPERATORS;
                 scope.needsExpression = ManageTaskUtils.needsExpression;
 
+                scope.setOperator = function (type, value) {
+                    scope.type = type;
+                    scope.operator = value;
+                }
+
+                ngModel.$render = function () {
+                    scope.field = ngModel.$viewValue.key;
+                    scope.negationOperator = ngModel.$viewValue.negationOperator;
+                    scope.operator = ngModel.$viewValue.operator;
+                    scope.expression = ngModel.$viewValue.expression;
+                }
+
                 scope.$watch('field + negationOperator + operator + type + expression', function(){
                     ngModel.$setViewValue({
                         key: scope.field,
@@ -336,6 +348,7 @@
                         type: scope.type,
                         expression: scope.expression
                     });
+
                 });
             }
         }

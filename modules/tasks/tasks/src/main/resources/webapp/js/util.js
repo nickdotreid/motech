@@ -273,7 +273,7 @@
             isBoolean: function (value) {
                 return value && $.inArray(value, ['BOOLEAN']) !== -1;
             },
-            needExpression: function (param) {
+            needsExpression: function (param) {
                 return param && $.inArray(param, ['task.exist', 'task.afterNow', 'task.beforeNow']) === -1;
             },
             doQuery: function (q, resource) {
