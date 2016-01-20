@@ -30,7 +30,7 @@
                                 <div class="popover-content">
                                     <ul class="trigger-list">
                                         <li ng-repeat="trigger in channel.triggerTaskEvents | filter:searchTrigger">
-                                            <a ng-click="selectTrigger(channel, trigger)">{{msg(trigger.displayName)}}</a>
+                                            <a ng-click="selectTrigger(channel.moduleName, trigger.subject)">{{msg(trigger.displayName)}}</a>
                                         </li>
                                     </ul>
                                 </div>

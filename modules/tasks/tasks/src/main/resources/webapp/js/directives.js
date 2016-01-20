@@ -367,11 +367,19 @@
                 scope.msg = scope.$parent.$parent.msg; // Do this differently...
                 if (!scope.availableFields) scope.availableFields = []
 
-                var getSources = function() {
-                    var providerIds = [], providerObjs = {};
+                var sortFieldsBySource = function() {
+                    var sources = [], providerIds = [], providerObjs = {};
                     for (var field of scope.availableFields) {
                         if (field.prefix == ManageTaskUtils.TRIGGER_PREFIX) {
-                            // Get channel?
+                            if(providerIds.indexOf(field.triggerName) === -1){
+                                providerIds.push(field.triggerName);
+                                providerObjs[field.triggerName] = {
+                                    type: field.moduleName,
+                                    fields: [field]
+                                };
+                            } else {
+                                providerObjs[field.triggerName].fields.push(field);
+                            }
                         }
                         if (field.prefix == ManageTaskUtils.DATA_SOURCE_PREFIX) {
                             if(providerIds.indexOf(field.providerId) === -1){
@@ -385,17 +393,13 @@
                             }
                         }
                     }
-                    var providers = [];
                     for(var providerId of providerIds) {
-                        var source = DataSources.getObject(providerId, providerObjs[providerId].type);
-                        var sourceObj = Object.assign({}, source);
-                        sourceObj.fields = providerObjs[providerId].fields;
-                        providers.push(sourceObj);
+                        sources.push(providerObjs[providerId]);
                     }
-                    scope.dataSources = providers; // Because a listener could be watching for changes, update only once...
+                    scope.dataSources = sources; // Because a listener could be watching for changes, update only once...
                 };
-                scope.$on('fields.changed', getSources);
-                getSources();
+                scope.$on('fields.changed', sortFieldsBySource);
+                sortFieldsBySource();
 
                 ngModel.$formatters.push(function(modelValue){
                     var value = ManageTaskUtils.parseField(modelValue);

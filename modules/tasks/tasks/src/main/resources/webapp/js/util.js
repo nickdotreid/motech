@@ -106,6 +106,9 @@
                 input: 'input[parsedate-update]',
                 pattern: 10
             } ],
+            needsExpression: function (param) {
+                return param && $.inArray(param, ['task.exist', 'task.afterNow', 'task.beforeNow']) === -1;
+            },
             find: function (data) {
                 var where = (data && data.where) || [],
                     unique = (data && data.unique === false) ? false : true,
@@ -165,46 +168,6 @@
                     });
 
                     return array;
-                }
-            },
-            trigger: {
-                select: function (scope, channel, trigger) {
-                    if (!scope.task) {
-                        scope.task = {};
-                    }
-
-                    scope.task.trigger = {
-                        displayName: trigger.displayName,
-                        channelName: channel.displayName,
-                        moduleName: channel.moduleName,
-                        moduleVersion: channel.moduleVersion,
-                        subject: trigger.subject,
-                        triggerListenerSubject: trigger.triggerListenerSubject
-                    };
-
-                    angular.element("#trigger-" + channel.moduleName).parent('li').addClass('selectedTrigger').addClass('active');
-
-                    if (angular.element("#collapse-trigger").collapse) {
-                        angular.element("#collapse-trigger").collapse('hide');
-                    }
-
-                    scope.selectedTrigger = trigger;
-
-                    if (!scope.$$phase) {
-                        scope.$apply();
-                    }
-                },
-                remove: function (scope) {
-                    var li = angular.element("#trigger-" + scope.task.trigger.moduleName).parent('li');
-
-                    li.removeClass('selectedTrigger');
-                    li.removeClass("active");
-
-                    delete scope.task.trigger;
-
-                    if (!scope.$$phase) {
-                        scope.$apply();
-                    }
                 }
             },
             action: {
@@ -272,9 +235,6 @@
             },
             isBoolean: function (value) {
                 return value && $.inArray(value, ['BOOLEAN']) !== -1;
-            },
-            needsExpression: function (param) {
-                return param && $.inArray(param, ['task.exist', 'task.afterNow', 'task.beforeNow']) === -1;
             },
             doQuery: function (q, resource) {
                 var defer = q.defer(), result;

@@ -294,7 +294,7 @@
         blockUI();
 
         $q.all([
-            $scope.util.doQuery($q, Channels),
+            Channels.load(),
             DataSources.load()
         ]).then(function(data) {
             blockUI();
@@ -313,25 +313,10 @@
                     var triggerChannel, trigger, dataSource, object;
 
                     if ($scope.task.trigger) {
-                        triggerChannel = $scope.util.find({
-                            where: $scope.channels,
-                            by: {
-                                what: 'moduleName',
-                                equalTo: $scope.task.trigger.moduleName
-                            }
-                        });
-
-                        trigger = triggerChannel && $scope.util.find({
-                            where: triggerChannel.triggerTaskEvents,
-                            by: {
-                                what: 'subject',
-                                equalTo: $scope.task.trigger.subject
-                            }
-                        });
-
-                        if (trigger) {
-                            $scope.util.trigger.select($scope, triggerChannel, trigger);
-                        }
+                        $scope.selectTrigger(
+                            $scope.task.trigger.moduleName,
+                            $scope.task.trigger.subject
+                        );
                     }
 
                     angular.forEach($scope.task.actions, function (info, idx) {
@@ -387,25 +372,37 @@
             unblockUI();
         });
 
-        $scope.selectTrigger = function (channel, trigger) {
-            if ($scope.task.trigger) {
+        $scope.selectTrigger = function (moduleName, subject, confirm) {
+            var channel, trigger;
+            if ($scope.task.trigger && !confirm) {
                 motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
-                    if (val) {
-                        $scope.util.trigger.remove($scope);
-                        $scope.util.trigger.select($scope, channel, trigger);
-                    }
+                    if (val) $scope.selectTrigger(moduleName, subject, true);
                 });
             } else {
-                $scope.util.trigger.select($scope, channel, trigger);
+                channel = Channels.getModule(moduleName);
+                trigger = Channels.getTrigger(moduleName, subject);
+                $scope.task.trigger = {
+                    displayName: trigger.displayName,
+                    channelName: channel.displayName,
+                    moduleName: channel.moduleName,
+                    moduleVersion: channel.moduleVersion,
+                    subject: trigger.subject,
+                    triggerListenerSubject: trigger.triggerListenerSubject
+                };
+                $scope.selectedTrigger = trigger;
             }
+            //angular.element("#trigger-" + channel.moduleName).parent('li').addClass('selectedTrigger').addClass('active');
+            /*
+            if (angular.element("#collapse-trigger").collapse) {
+                angular.element("#collapse-trigger").collapse('hide');
+            }
+            */
         };
-
-        $scope.removeTrigger = function ($event) {
-            $event.stopPropagation();
-
+        $scope.removeTrigger = function () {
             motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
                 if (val) {
-                    $scope.util.trigger.remove($scope);
+                    delete $scope.task.trigger;
+                    delete $scope.selectedTrigger;
                 }
             });
         };
@@ -414,7 +411,6 @@
             if (!$scope.task.actions) {
                 $scope.task.actions = [];
             }
-
             $scope.task.actions.push({});
         };
 
@@ -423,7 +419,6 @@
                 $scope.task.actions.remove(idx);
                 $scope.selectedActionChannel.remove(idx);
                 $scope.selectedAction.remove(idx);
-
                 if (!$scope.$$phase) {
                     $scope.$apply($scope.task);
                 }
@@ -607,8 +602,10 @@
         $scope.getFields = function (beforeStep) {
             var fields = [];
             if($scope.selectedTrigger) {
-                $scope.selectedTrigger.eventParameters.forEach(function (field) {
-                    field.prefix = ManageTaskUtils.TRIGGER_PREFIX;
+               Channels.getEventParameters(
+                $scope.selectedTrigger.moduleName,
+                $scope.selectedTrigger.subject)
+               .forEach(function (field) {
                     fields.push(field);
                 });
             }
@@ -616,14 +613,7 @@
             $scope.task.taskConfig.steps.forEach(function (step, index) {
                 if(step['@type'] != ManageTaskUtils.DATA_SOURCE_STEP) return false;
                 if(beforeStep <= index) return false;
-                var serviceObj = DataSources.getObject(step.providerId, step.type);
-                if (!serviceObj || !serviceObj.fields) return false;
-                serviceObj.fields.forEach(function (field) {
-                    field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
-                    field.providerId = step.providerId;
-                    field.providerType = step.type;
-                    field.providerName = step.providerName;
-                    field.objectId = serviceObj.id; //Not sure what this is doing..
+                DataSources.getFields(step.providerId, step.type).forEach(function (field) {
                     fields.push(field);
                 });
             });
