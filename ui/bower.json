@@ -19,7 +19,6 @@
   "dependencies": {
     "jquery": "1.11.3",
     "angular": "~1.2",
-    "bootstrap": "~3.3.6",
     "highlight": "~9.0.0",
     "jquery-cron": "~0.1.4",
     "moment": "~2.10.6",
