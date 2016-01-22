@@ -275,21 +275,15 @@
 
     controllers.controller('TasksManageCtrl', function ($scope, ManageTaskUtils, Channels, DataSources, Tasks, $q, $timeout, $routeParams, $http, $compile, $filter) {
         $scope.util = ManageTaskUtils; // Should call directly to avoid confusion?
-        $scope.selectedActionChannel = [];
-        $scope.selectedAction = [];
-        $scope.task = { // Should be defined in factory?
-            taskConfig: {
-                steps: []
-            }
-        };
+
+        var task = new Tasks.new();
+        $scope.task = task; //ew looks wrong...
 
         innerLayout({
             spacing_closed: 30,
             east__minSize: 200,
             east__maxSize: 350
         });
-
-        $scope.filter = $filter('filter');
 
         blockUI();
 
@@ -302,13 +296,7 @@
             $scope.channels = data[0];
             $scope.dataSources = data[1];
 
-            if ($routeParams.taskId === undefined) {
-                $scope.task = {
-                    taskConfig: {
-                        steps: []
-                    }
-                };
-            } else {
+            if ($routeParams.taskId !== undefined) {
                 $scope.task = Tasks.get({ taskId: $routeParams.taskId }, function () {
                     var triggerChannel, trigger, dataSource, object;
 
@@ -318,54 +306,6 @@
                             $scope.task.trigger.subject
                         );
                     }
-
-                    angular.forEach($scope.task.actions, function (info, idx) {
-                        var action = null, actionBy = [];
-
-                        $scope.selectedActionChannel[idx] = $scope.util.find({
-                            where: $scope.channels,
-                            by: {
-                                what: 'moduleName',
-                                equalTo: info.moduleName
-                            }
-                        });
-
-                        if ($scope.selectedActionChannel[idx]) {
-                            if (info.name) {
-                                actionBy.push({ what: 'name', equalTo: info.name });
-                                action = $scope.util.find({
-                                    where: $scope.selectedActionChannel[idx].actionTaskEvents,
-                                    by: actionBy
-                                });
-                            } else {
-                                if (info.subject) {
-                                    actionBy.push({ what: 'subject', equalTo: info.subject });
-                                }
-
-                                if (info.serviceInterface && info.serviceMethod) {
-                                    actionBy.push({ what: 'serviceInterface', equalTo: info.serviceInterface });
-                                    actionBy.push({ what: 'serviceMethod', equalTo: info.serviceMethod });
-                                }
-
-                                action = $scope.util.find({
-                                    where: $scope.selectedActionChannel[idx].actionTaskEvents,
-                                    by: actionBy
-                                });
-                            }
-
-                            if (action) {
-                                $timeout(function () {
-                                    $scope.util.action.select($scope, idx, action);
-                                    angular.element('#collapse-action-' + idx).collapse('hide');
-
-                                    angular.forEach($scope.selectedAction[idx].actionParameters, function (param) {
-                                        param.value = info.values[param.key] || '';
-                                        param.value = $scope.util.convertToView($scope, param.type, param.value);
-                                    });
-                                });
-                            }
-                        }
-                    });
                 });
             }
 
@@ -373,52 +313,30 @@
         });
 
         $scope.selectTrigger = function (moduleName, subject, confirm) {
-            var channel, trigger;
             if ($scope.task.trigger && !confirm) {
                 motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
                     if (val) $scope.selectTrigger(moduleName, subject, true);
                 });
             } else {
-                channel = Channels.getModule(moduleName);
-                trigger = Channels.getTrigger(moduleName, subject);
-                $scope.task.trigger = {
-                    displayName: trigger.displayName,
-                    channelName: channel.displayName,
-                    moduleName: channel.moduleName,
-                    moduleVersion: channel.moduleVersion,
-                    subject: trigger.subject,
-                    triggerListenerSubject: trigger.triggerListenerSubject
-                };
+                var trigger = $scope.task.setTrigger(moduleName, subject);
                 $scope.selectedTrigger = trigger;
             }
-            //angular.element("#trigger-" + channel.moduleName).parent('li').addClass('selectedTrigger').addClass('active');
-            /*
-            if (angular.element("#collapse-trigger").collapse) {
-                angular.element("#collapse-trigger").collapse('hide');
-            }
-            */
         };
         $scope.removeTrigger = function () {
             motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
                 if (val) {
-                    delete $scope.task.trigger;
+                    $scope.task.removeTrigger();
                     delete $scope.selectedTrigger;
                 }
             });
         };
 
         $scope.addAction = function () {
-            if (!$scope.task.actions) {
-                $scope.task.actions = [];
-            }
-            $scope.task.actions.push({});
+            $scope.task.addAction();
         };
 
         $scope.removeAction = function (idx) {
             var removeActionSelected = function (idx) {
-                $scope.task.actions.remove(idx);
-                $scope.selectedActionChannel.remove(idx);
-                $scope.selectedAction.remove(idx);
                 if (!$scope.$$phase) {
                     $scope.$apply($scope.task);
                 }
@@ -454,7 +372,7 @@
         };
 
         $scope.getActions = function (idx) {
-            return ($scope.selectedActionChannel[idx] && $scope.selectedActionChannel[idx].actionTaskEvents) || [];
+            return [];
         };
 
         $scope.selectAction = function (idx, action) {
@@ -469,42 +387,30 @@
             }
         };
 
-        $scope.addStep = function (type) {
-            var data = {};
-            data['@type'] = type;
-            $scope.task.taskConfig.steps.push(data);
-        }
-
         $scope.addFilterSet = function () {
-            $scope.addStep(ManageTaskUtils.FILTER_SET_STEP);
+            task.addStep(ManageTaskUtils.FILTER_SET_STEP);
         }
 
         $scope.addDataSource = function () {
-            $scope.addStep(ManageTaskUtils.DATA_SOURCE_STEP);
+            task.addStep(ManageTaskUtils.DATA_SOURCE_STEP);
         }
 
-        $scope.removeStep = function (data) {
-            var remove = function () {
-                $scope.task.taskConfig.steps.removeObject(data);
-
-                if (!$scope.$$phase) { // can I remove this? plz?
-                    $scope.$apply($scope.task);
-                }
-            };
-
+        $scope.removeStep = function (index) {
             if (true) { // make sure object is non-empty
                 //'task.confirm.dataSource'
                 motechConfirm('task.confirm.filterSet', "task.header.confirm", function (val) {
                     if (val) {
-                        remove(data);
+                        task.removeStep(index);
                     }
                 });
             } else {
-                remove();
+                task.removeStep(index);
             }
         };
 
         $scope.save = function (enabled) {
+            task.enabled = enabled; // is there a way to test if Task is enable-able?
+
             var success = function (response) {
                     var alertMessage = enabled ? $scope.msg('task.success.savedAndEnabled') : $scope.msg('task.success.saved'),
                     loc, indexOf, errors = response.validationErrors || response;
@@ -524,63 +430,12 @@
                 error = function (response) {
                     var data = (response && response.data) || response;
 
-                    angular.forEach($scope.task.actions, function (action) {
-                        delete action.values;
-                    });
-
-                    angular.forEach($scope.task.taskConfig.steps, function (step) {
-                        if (step['@type'] === 'DataSource') {
-                            angular.forEach(step.lookup, function(lookupField) {
-                                lookupField.value = $scope.util.convertToView($scope, 'UNICODE', lookupField.value);
-                            });
-                        }
-                    });
-
-                    delete $scope.task.enabled;
-
                     unblockUI();
                     jAlert($scope.util.createErrorMessage($scope, data, false), $scope.msg('task.header.error'));
                 };
 
-            $scope.task.enabled = enabled;
-
-            angular.forEach($scope.selectedAction, function (action, idx) {
-                if ($scope.task.actions[idx].values === undefined) {
-                    $scope.task.actions[idx].values = {};
-                }
-
-                if ($scope.task.actions[idx].name === undefined && action.name !== undefined) {
-                    $scope.task.actions[idx].name = action.name;
-                }
-
-                angular.forEach(action.actionParameters, function (param) {
-                    $scope.task.actions[idx].values[param.key] = param.value; // This is what we are aiming for
-
-                    if (!param.required && isBlank($scope.task.actions[idx].values[param.key])) {
-                        delete $scope.task.actions[idx].values[param.key];
-                    }
-                });
-            });
-
-            angular.forEach($scope.task.taskConfig.steps, function (step) {
-                if (step['@type'] === 'DataSource') {
-                    if (step.lookup === undefined) {
-                        step.lookup = [];
-                    }
-                    angular.forEach(step.lookup, function(lookupField) {
-                        lookupField.value = $scope.util.convertToServer($scope, lookupField.value || '');
-                    });
-
-                }
-            });
-
             blockUI();
-
-            if (!$routeParams.taskId) {
-                $http.post('../tasks/api/task/save', $scope.task).success(success).error(error);
-            } else {
-                $http.post('../tasks/api/task/' + $routeParams.taskId, $scope.task).success(success).error(error);
-            }
+            task.save().then(success, error);
         };
 
         $scope.showHelp = function () {
@@ -609,8 +464,8 @@
                     fields.push(field);
                 });
             }
-            if (!$scope.task.taskConfig.steps) return fields;
-            $scope.task.taskConfig.steps.forEach(function (step, index) {
+            if (!$scope.task.steps) return fields;
+            $scope.task.steps.forEach(function (step, index) {
                 if(step['@type'] != ManageTaskUtils.DATA_SOURCE_STEP) return false;
                 if(beforeStep <= index) return false;
                 DataSources.getFields(step.providerId, step.type).forEach(function (field) {

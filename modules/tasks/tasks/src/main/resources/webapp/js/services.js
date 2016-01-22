@@ -5,9 +5,97 @@
 
     var services = angular.module('tasks.services', ['ngResource']);
 
-    services.factory('Tasks', function ($resource) {
-        return $resource('../tasks/api/task/:taskId', {taskId: '@id'});
-    });
+    services.factory('Tasks', ['$q', '$http', '$resource', 'Channels', 'DataSources', function ($q, $http, $resource, Channels, DataSources) {
+        var Task = function (data) {
+            this.trigger;
+            this.steps = [];
+            this.actions = [];
+
+            if(!data) data = {};
+            this.data = data;
+
+            if (data && data.trigger && data.trigger.moduleName && data.trigger.subject) {
+                this.setTrigger(data.trigger.moduleName, data.trigger.subject);
+            }
+            if(data.taskConfig && data.taskConfig.steps && Array.isArray(data.taskConfig.steps)) this.steps = data.taskConfig.steps;
+            if(data.actions && Array.isArray(data.actions)) this.actions = data.actions;
+
+            return this;
+        }
+        Task.prototype.setTrigger = function (moduleName, subject) {
+            var channel = Channels.getModule(moduleName),
+            trigger = Channels.getTrigger(moduleName, subject);
+            if (!channel || !trigger) return false;
+            this.trigger = {
+                displayName: trigger.displayName,
+                channelName: channel.displayName,
+                moduleName: channel.moduleName,
+                moduleVersion: channel.moduleVersion,
+                subject: trigger.subject,
+                triggerListenerSubject: trigger.triggerListenerSubject
+            };
+            return this.trigger;
+        }
+        Task.prototype.removeTrigger = function () {
+            delete this.trigger;
+            return true;
+        }
+
+        Task.prototype.addAction = function () {
+            if (!this.actions) {
+                this.actions = [];
+            }
+            this.actions.push({});
+        }
+        Task.prototype.removeAction = function (index) {
+            if(!this.actions[index]) return false;
+            this.actions.remove(index);
+            return true;
+        }
+
+        Task.prototype.addStep = function (type) {
+            var data = {};
+            data['@type'] = type;
+            this.steps.push(data);
+        }
+        Task.prototype.removeStep = function (index) {
+            if(!this.taskConfig.steps[index]) return false;
+            this.taskConfig.steps.remove(index);
+            return true;
+        }
+        Task.prototype.save = function () {
+            var URL = '../tasks/api/task/save';
+            if(this.taskId) URL = '../tasks/api/task/' + this.taskId;
+
+            // Reassign and clean data...
+            this.data.enabled = false;
+            if(this.enabled) this.data.enabled = true;
+            this.data.name = this.name;
+            this.data.description = this.description;
+            this.data.trigger = this.trigger;
+            if(!this.data.taskConfig) this.data.taskConfig = {};
+            this.data.taskConfig.steps = this.steps;
+            this.data.actions = this.actions;
+
+            return $http.post(URL, this);
+        }
+        var resource = $resource('../tasks/api/task/:taskId', {taskId: '@id'}, {
+            get: {
+                transformResponse: [function (data, headersGetter) {
+                    return new Task(data);
+                }]
+            }
+        });
+        return {
+            new: function () {
+                return new Task();
+            },
+            get: resource.get,
+            query: resource.query,
+            remove: resource.remove,
+            delete: resource.delete
+        };
+    }]);
 
     services.factory('Activities', function ($resource) {
         return $resource('../tasks/api/activity/:taskId');
