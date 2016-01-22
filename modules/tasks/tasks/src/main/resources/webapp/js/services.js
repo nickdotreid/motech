@@ -5,7 +5,7 @@
 
     var services = angular.module('tasks.services', ['ngResource']);
 
-    services.factory('Tasks', ['$q', '$http', '$resource', 'Channels', 'DataSources', function ($q, $http, $resource, Channels, DataSources) {
+    services.factory('Task', ['$q', '$http', 'Channels', 'DataSources', function ($q, $http, Channels, DataSources) {
         var Task = function (data) {
             this.trigger;
             this.steps = [];
@@ -79,6 +79,12 @@
 
             return $http.post(URL, this);
         }
+
+        return Task;
+    }]);
+
+    services.factory('Tasks', ['$resource', 'Task', function ($resource, Task) {
+
         var resource = $resource('../tasks/api/task/:taskId', {taskId: '@id'}, {
             get: {
                 method: 'GET',
