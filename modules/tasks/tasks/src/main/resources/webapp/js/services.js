@@ -81,7 +81,9 @@
         }
         var resource = $resource('../tasks/api/task/:taskId', {taskId: '@id'}, {
             get: {
+                method: 'GET',
                 transformResponse: [function (data, headersGetter) {
+                    data = angular.fromJson(data);
                     return new Task(data);
                 }]
             }
