@@ -109,118 +109,6 @@
             needsExpression: function (param) {
                 return param && $.inArray(param, ['task.exist', 'task.afterNow', 'task.beforeNow']) === -1;
             },
-            find: function (data) {
-                var where = (data && data.where) || [],
-                    unique = (data && data.unique === false) ? false : true,
-                    found = [],
-                    by = [],
-                    isTrue,
-                    item,
-                    i,
-                    j;
-
-                if (data && data.by) {
-                    if (data.by.isArray) {
-                        by = data.by;
-                    } else if (data.by.what && data.by.equalTo) {
-                        by = [data.by];
-                    }
-                }
-
-                for (i = 0; i < where.length; i += 1) {
-                    isTrue = (by.length > 0) ? true : false;
-                    item = where[i];
-
-                    for (j = 0; j < by.length; j += 1) {
-                        if (data.msg !== undefined) {
-                            isTrue = isTrue && (item[by[j].what] === by[j].equalTo || data.msg(item[by[j].what]) === by[j].equalTo);
-                        } else {
-                            isTrue = isTrue && item[by[j].what] === by[j].equalTo;
-                        }
-                    }
-
-                    if (isTrue) {
-                        found.push(item);
-                    }
-                }
-
-                return unique ? found[0] : found;
-            },
-            channels: {
-                withTriggers: function (channels) {
-                    var array = [];
-
-                    angular.forEach(channels, function (channel) {
-                        if (channel.triggerTaskEvents && channel.triggerTaskEvents.length) {
-                            array.push(channel);
-                        }
-                    });
-
-                    return array;
-                },
-                withActions: function (channels) {
-                    var array = [];
-
-                    angular.forEach(channels, function (channel) {
-                        if (channel.actionTaskEvents && channel.actionTaskEvents.length) {
-                            array.push(channel);
-                        }
-                    });
-
-                    return array;
-                }
-            },
-            action: {
-                select: function (scope, idx, action) {
-                    scope.task.actions[idx] = {
-                        displayName: action.displayName,
-                        channelName: scope.selectedActionChannel[idx].displayName,
-                        moduleName: scope.selectedActionChannel[idx].moduleName,
-                        moduleVersion: scope.selectedActionChannel[idx].moduleVersion
-                    };
-
-                    if (action.subject) {
-                        scope.task.actions[idx].subject = action.subject;
-                    }
-
-                    if (action.serviceInterface && action.serviceMethod) {
-                        scope.task.actions[idx].serviceInterface = action.serviceInterface;
-                        scope.task.actions[idx].serviceMethod = action.serviceMethod;
-                    }
-
-                    scope.selectedAction[idx] = cloneObj(action);
-
-                    if (!scope.$$phase) {
-                        scope.$apply();
-                    }
-                }
-            },
-            dataSource: {
-                select: function (scope, data, selected) {
-                    data.providerName = selected.name;
-                    data.providerId = selected.id;
-
-                    delete data.displayName;
-                    delete data.type;
-                    delete data.lookup;
-                    delete data.failIfDataNotFound;
-
-                    if (!scope.$$phase) {
-                        scope.$apply(data);
-                    }
-                },
-                selectObject: function (scope, data, selected) {
-                    data.displayName = selected.displayName;
-                    data.type = selected.type;
-
-                    delete data.lookup;
-                    delete data.failIfDataNotFound;
-
-                    if (!scope.$$phase) {
-                        scope.$apply(data);
-                    }
-                }
-            },
             isText: function (value) {
                 return value && $.inArray(value, ['UNICODE', 'TEXTAREA']) !== -1;
             },
@@ -235,15 +123,6 @@
             },
             isBoolean: function (value) {
                 return value && $.inArray(value, ['BOOLEAN']) !== -1;
-            },
-            doQuery: function (q, resource) {
-                var defer = q.defer(), result;
-
-                result = resource.query(function() {
-                    defer.resolve(result);
-                });
-
-                return defer.promise;
             }
         };
 
