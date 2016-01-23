@@ -3,8 +3,8 @@
 
     /* Services */
 
-    angular.module('tasks.utils', []).factory('ManageTaskUtils', function () {
-        var utils = {
+    angular.module('tasks.utils', []).factory('TasksConstants', function () {
+        return {
             TRIGGER_PREFIX: 'trigger',
             DATA_SOURCE_PREFIX: 'ad',
             FILTER_SET_STEP: 'FilterSet',
@@ -125,17 +125,18 @@
                 return value && $.inArray(value, ['BOOLEAN']) !== -1;
             }
         };
-
-        utils.formatField = function (field) {
+    }).factory('TaskFieldHelper', ['TasksConstants', function (TasksConstants) {
+        var helpers = {};
+        helpers.formatField = function (field) {
             if(!field) return "";
             var str = "";
 
             switch(field.prefix){
                 case utils.TRIGGER_PREFIX:
-                    str = "{0}.{1}".format(utils.TRIGGER_PREFIX, field.eventKey);
+                    str = "{0}.{1}".format(TasksConstants.TRIGGER_PREFIX, field.eventKey);
                     break;
                 case utils.DATA_SOURCE_PREFIX:
-                    str = "{0}.{1}.{2}#{3}.{4}".format(utils.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
+                    str = "{0}.{1}.{2}#{3}.{4}".format(TasksConstants.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
                     break;
                 default:
                     str = field.displayName;
@@ -149,8 +150,7 @@
 
             return "{{" + str + "}}";
         }
-
-        utils.parseField = function (str, existingFields) {
+        helpers.parseField = function (str, existingFields) {
             if(!str) return false;
             if(!existingFields || !Array.isArray(existingFields)) existingFields=[];
             // Remove formatting (if present)
@@ -164,7 +164,7 @@
             field.displayName = str;
 
             existingFields.forEach(function (exField) {
-                if("{{" + str + "}}" == utils.formatField(exField)){
+                if("{{" + str + "}}" == helpers.formatField(exField)){
                     field = Object.assign({}, exField);
                 }
             });
@@ -181,7 +181,7 @@
             });
             return field;
         };
-        return utils;
-    });
+        return helpers;
+    }]);
 
 }());

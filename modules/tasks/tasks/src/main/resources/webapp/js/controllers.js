@@ -6,7 +6,7 @@
 
     var controllers = angular.module('tasks.controllers', []);
 
-    controllers.controller('TasksDashboardCtrl', function ($scope, $filter, Tasks, Activities, $rootScope, $http, ManageTaskUtils) {
+    controllers.controller('TasksDashboardCtrl', function ($scope, $filter, Tasks, Activities, $rootScope, $http, TasksConstants) {
         var tasks, activities = [],
             searchMatch = function (item, method, searchQuery) {
                 var result;
@@ -50,7 +50,6 @@
         $scope.itemsPerPage = 10;
         $scope.currentFilter = 'allItems';
         $scope.formatInput = [];
-        $scope.util = ManageTaskUtils;
 
         innerLayout({
             spacing_closed: 30,
@@ -111,7 +110,7 @@
                 .success(dummyHandler)
                 .error(function (response) {
                     item.task.enabled = !enabled;
-                    jAlert($scope.util.createErrorMessage($scope, response, false), $scope.msg('task.error.actionNotChangeTitle'));
+//                    jAlert($scope.util.createErrorMessage($scope, response, false), $scope.msg('task.error.actionNotChangeTitle'));
                 });
         };
 
@@ -273,9 +272,7 @@
 
     });
 
-    controllers.controller('TasksManageCtrl', function ($scope, ManageTaskUtils, Channels, DataSources, Tasks, $q, $timeout, $routeParams, $http, $compile, $filter) {
-        $scope.util = ManageTaskUtils; // Should call directly to avoid confusion?
-
+    controllers.controller('TasksManageCtrl', function ($scope, TasksConstants, Channels, DataSources, Tasks, $q, $timeout, $routeParams, $http, $compile, $filter) {
         var task = new Tasks.new();
         $scope.task = task; //ew looks wrong...
 
@@ -297,19 +294,12 @@
             $scope.dataSources = data[1];
 
             if ($routeParams.taskId !== undefined) {
-                $scope.task = Tasks.get({ taskId: $routeParams.taskId }, function () {
-                    var triggerChannel, trigger, dataSource, object;
-
-                    if ($scope.task.trigger) {
-                        $scope.selectTrigger(
-                            $scope.task.trigger.moduleName,
-                            $scope.task.trigger.subject
-                        );
-                    }
+                $scope.task = Tasks.get({ taskId: $routeParams.taskId }, function() {
+                    unblockUI();
                 });
+            }else{
+                unblockUI();
             }
-
-            unblockUI();
         });
 
         $scope.$on('task.trigger.update', function (event, moduleName, subject) {
@@ -354,7 +344,7 @@
                 removeActionSelected(idx);
             }
         };
-
+/*
         $scope.selectActionChannel = function (idx, channel) {
             if ($scope.selectedActionChannel[idx] && $scope.selectedAction[idx]) {
                 motechConfirm('task.confirm.action', "task.header.confirm", function (val) {
@@ -384,19 +374,20 @@
                 $scope.util.action.select($scope, idx, action);
             }
         };
-
+*/
         $scope.addFilterSet = function () {
-            task.addStep(ManageTaskUtils.FILTER_SET_STEP);
+            task.addStep(TasksConstants.FILTER_SET_STEP);
         }
 
         $scope.addDataSource = function () {
-            task.addStep(ManageTaskUtils.DATA_SOURCE_STEP);
+            task.addStep(TasksConstants.DATA_SOURCE_STEP);
         }
 
         $scope.removeStep = function (index) {
             if (true) { // make sure object is non-empty
-                //'task.confirm.dataSource'
-                motechConfirm('task.confirm.filterSet', "task.header.confirm", function (val) {
+                var msg = 'task.confirm.filterSet';
+                if(task.steps[index]['@type'] == TasksConstants.DATA_SOURCE_STEP) msg = 'task.confirm.dataSource';
+                motechConfirm(msg, "task.header.confirm", function (val) {
                     if (val) {
                         task.removeStep(index);
                     }
@@ -414,7 +405,7 @@
                     loc, indexOf, errors = response.validationErrors || response;
 
                     if (errors.length > 0) {
-                        alertMessage = $scope.util.createErrorMessage($scope, errors, true);
+                        //alertMessage = TasksConstants.createErrorMessage($scope, errors, true);
                     }
 
                     jAlert(alertMessage, $scope.msg('task.header.saved'), function () {
@@ -429,7 +420,7 @@
                     var data = (response && response.data) || response;
 
                     unblockUI();
-                    jAlert($scope.util.createErrorMessage($scope, data, false), $scope.msg('task.header.error'));
+                    //jAlert($scope.util.createErrorMessage($scope, data, false), $scope.msg('task.header.error'));
                 };
 
             blockUI();
@@ -464,7 +455,7 @@
             }
             if (!$scope.task.steps) return fields;
             $scope.task.steps.forEach(function (step, index) {
-                if(step['@type'] != ManageTaskUtils.DATA_SOURCE_STEP) return false;
+                if(step['@type'] != TasksConstants.DATA_SOURCE_STEP) return false;
                 if(beforeStep <= index) return false;
                 DataSources.getFields(step.providerId, step.type).forEach(function (field) {
                     fields.push(field);

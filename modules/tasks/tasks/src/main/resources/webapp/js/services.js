@@ -134,7 +134,7 @@
         }
     }]);
 
-    services.service('Channels', ['ManageTaskUtils', 'TasksResource', function (ManageTaskUtils, TasksResource) {
+    services.service('Channels', ['TasksConstants', 'TasksResource', function (TasksConstants, TasksResource) {
         var resource = TasksResource('../tasks/api/channel');
         resource.getModule = function (name) {
             var channels = resource.get();
@@ -160,7 +160,7 @@
             var parameters = [];
             if (module && trigger) {
                 trigger.eventParameters.forEach(function (param) {
-                    param.prefix = ManageTaskUtils.TRIGGER_PREFIX;
+                    param.prefix = TasksConstants.TRIGGER_PREFIX;
                     param.module = module.moduleName;
                     param.moduleName = module.displayName;
                     param.trigger = trigger.subject;
@@ -173,7 +173,7 @@
         return resource;
     }]);
 
-    services.service('DataSources', ['ManageTaskUtils', 'TasksResource', function (ManageTaskUtils, TasksResource) {
+    services.service('DataSources', ['TasksConstants', 'TasksResource', function (TasksConstants, TasksResource) {
         var resource = TasksResource('../tasks/api/datasource');
         resource.getProvider = function (providerId) {
             var sources = resource.get();
@@ -200,7 +200,7 @@
             var object = resource.getObject(providerId, type);
             if(!object || !object.fields) return fields;
             object.fields.forEach(function(field){
-                field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
+                field.prefix = TasksConstants.DATA_SOURCE_PREFIX;
                 field.providerId = object.providerId;
                 field.providerName = object.providerName;
                 field.providerType = type;

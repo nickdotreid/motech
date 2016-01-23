@@ -289,7 +289,7 @@
                 availableFieldsFn: '&'
             },
             templateUrl: '../tasks/partials/form-data-source.html',
-            controller: ['$scope', 'DataSources', 'ManageTaskUtils', function ($scope, ManageTaskUtils) {
+            controller: ['$scope', function ($scope) {
                 $scope.msg = $scope.$parent.msg;
 
                 // Defaults
@@ -381,7 +381,7 @@
                 dataSources: '=sources',
                 availableFieldsFn: '&'
             },
-            controller: ['$scope', 'ManageTaskUtils', function ($scope, ManageTaskUtils) {
+            controller: ['$scope', 'TasksConstants', function ($scope, TasksConstants) {
                 // Set defaults...
                 $scope.filters = $scope.filterSet.filters || [];
 
@@ -392,8 +392,8 @@
                 getAvailableFields();
 
                 $scope.or_operator = null;
-                if($scope.filterSet.operator == ManageTaskUtils.FILTER_OPERATOR_AND) $scope.or_operator = false;
-                if($scope.filterSet.operator == ManageTaskUtils.FILTER_OPERATOR_OR) $scope.or_operator = true;
+                if($scope.filterSet.operator == TasksConstants.FILTER_OPERATOR_AND) $scope.or_operator = false;
+                if($scope.filterSet.operator == TasksConstants.FILTER_OPERATOR_OR) $scope.or_operator = true;
 
                 $scope.addFilter = function () {
                     $scope.filters.push({});
@@ -407,8 +407,8 @@
                 });
 
                 $scope.$watch('or_operator', function(newValue) {
-                    if(newValue) $scope.filterSet.operator = ManageTaskUtils.FILTER_OPERATOR_OR;
-                    if(!newValue) $scope.filterSet.operator = ManageTaskUtils.FILTER_OPERATOR_AND;
+                    if(newValue) $scope.filterSet.operator = TasksConstants.FILTER_OPERATOR_OR;
+                    if(!newValue) $scope.filterSet.operator = TasksConstants.FILTER_OPERATOR_AND;
                 });
             }],
             link: function(scope, element, attrs) {
@@ -417,7 +417,7 @@
         }
     });
 
-    directives.directive('filter', ['ManageTaskUtils', function (ManageTaskUtils) {
+    directives.directive('filter', ['TasksConstants', function (TasksConstants) {
         return {
             restrict: 'EA',
             require: 'ngModel',
@@ -430,8 +430,8 @@
             link: function (scope, element, attrs, ngModel) {
                 scope.msg = scope.$parent.msg;
                 // field == key
-                scope.FILTER_OPERATORS = ManageTaskUtils.FILTER_OPERATORS;
-                scope.needsExpression = ManageTaskUtils.needsExpression;
+                scope.FILTER_OPERATORS = TasksConstants.FILTER_OPERATORS;
+                scope.needsExpression = TasksConstants.needsExpression;
 
                 scope.setOperator = function (type, value) {
                     scope.type = type;
@@ -459,7 +459,7 @@
         }
     }]);
 
-    directives.directive('fieldInput', ['DataSources', 'ManageTaskUtils', function (DataSources, ManageTaskUtils) {
+    directives.directive('fieldInput', ['DataSources', 'TasksConstants', 'TaskFieldHelper', function (DataSources, TasksConstants, TaskFieldHelper) {
         return {
             restrict: 'EA',
             require: 'ngModel',
@@ -475,7 +475,7 @@
                 var sortFieldsBySource = function() {
                     var sources = [], providerIds = [], providerObjs = {};
                     for (var field of scope.availableFields) {
-                        if (field.prefix == ManageTaskUtils.TRIGGER_PREFIX) {
+                        if (field.prefix == TasksConstants.TRIGGER_PREFIX) {
                             if(providerIds.indexOf(field.triggerName) === -1){
                                 providerIds.push(field.triggerName);
                                 providerObjs[field.triggerName] = {
@@ -486,7 +486,7 @@
                                 providerObjs[field.triggerName].fields.push(field);
                             }
                         }
-                        if (field.prefix == ManageTaskUtils.DATA_SOURCE_PREFIX) {
+                        if (field.prefix == TasksConstants.DATA_SOURCE_PREFIX) {
                             if(providerIds.indexOf(field.providerId) === -1){
                                 providerIds.push(field.providerId);
                                 providerObjs[field.providerId] = {
@@ -512,7 +512,7 @@
                 sortFieldsBySource();
 
                 ngModel.$formatters.push(function(modelValue){
-                    var value = ManageTaskUtils.parseField(modelValue);
+                    var value = TaskFieldHelper.parseField(modelValue);
                     return {
                         displayName: value.displayName || "",
                         manipulations: value.manipulations || []
@@ -520,7 +520,7 @@
                 });
 
                 ngModel.$parsers.push(function (viewValue) {
-                    return ManageTaskUtils.formatField(viewValue);
+                    return TaskFieldHelper.formatField(viewValue);
                 });
 
                 ngModel.$render = function () {
@@ -630,10 +630,10 @@
         };
     });
 
-    directives.directive('contenteditable', function ($compile, ManageTaskUtils) {
+    directives.directive('contenteditable', function ($compile, TasksConstants, TaskFieldHelper) {
         return {
             restrict: 'A',
-            require: '?ngModel',
+            require: 'ngModel',
             link: function (scope, element, attrs, ngModel) {
                 if (!ngModel) return;
 
@@ -643,7 +643,7 @@
                         var ele = $(this);
                         if(this.tagName && this.tagName.toLowerCase() == 'field'){
                             var field = ele.data('value');
-                            container.append(ManageTaskUtils.formatField(field));
+                            container.append(TaskFieldHelper.formatField(field));
                         }else{
                             container.append(ele.text());
                         }
@@ -664,7 +664,7 @@
                             }
                             var fieldScope = scope.$parent.$new();
                             var fieldStr = viewValueStr.substr(matchStart, match.length);
-                            fieldScope.field = ManageTaskUtils.parseField(fieldStr, scope.$parent.getAvailableFields());
+                            fieldScope.field = TaskFieldHelper.parseField(fieldStr, scope.$parent.getAvailableFields());
                             var matchElement = $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
                             element.append(matchElement);
 
@@ -684,7 +684,7 @@
                     event.stopPropagation();
                     if(!field) return;
                     // maybe append formatted field at cursor point?
-                    ngModel.$setViewValue(read() + ManageTaskUtils.formatField(field));
+                    ngModel.$setViewValue(read() + TaskFieldHelper.formatField(field));
                     scope.$apply();
                 });
 
@@ -806,7 +806,7 @@
         };
     });
 
-    directives.directive('manipulationSorter', function($compile, $http, ManageTaskUtils) {
+    directives.directive('manipulationSorter', function($compile, $http, TasksConstants) {
         return {
             restrict: 'EA',
             templateUrl: '../tasks/partials/manipulation-sorter.html',
@@ -927,128 +927,6 @@
         };
     });
 
-    directives.directive('joinUpdate', function () {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-                el.on("focusout focusin keyup", function (event) {
-                    event.stopPropagation();
-                    var manipulateElement = $("[ismanipulate=true]"),
-                        manipulation = "join(" + $("#joinSeparator").val() + ")",
-                        elementManipulation = manipulateElement.attr("manipulate"),
-                        regex = new RegExp("join\\(.*?\\)", "g");
-
-                    elementManipulation = elementManipulation.replace(regex, manipulation);
-                    manipulateElement.attr("manipulate", elementManipulation);
-                    manipulateElement.trigger('manipulateChanged');
-                });
-            }
-        };
-    });
-
-    directives.directive('splitUpdate', function () {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-                el.on("focusout focusin keyup", function (event) {
-                    event.stopPropagation();
-                    var manipulateElement = $("[ismanipulate=true]"),
-                        manipulation = "split(" + $("#splitSeparator").val() + ")",
-                        elementManipulation = manipulateElement.attr("manipulate"),
-                        regex = new RegExp("split\\(.*?\\)", "g");
-
-                    elementManipulation = elementManipulation.replace(regex, manipulation);
-                    manipulateElement.attr("manipulate", elementManipulation);
-                    manipulateElement.trigger('manipulateChanged');
-                });
-            }
-        };
-    });
-
-    directives.directive('substringUpdate', function () {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-                el.on("focusout focusin keyup", function (event) {
-                    event.stopPropagation();
-                    var manipulateElement = $("[ismanipulate=true]"),
-                        manipulation = "substring(" + $("#substringSeparator").val() + ")",
-                        elementManipulation = manipulateElement.attr("manipulate"),
-                        regex = new RegExp("substring\\(.*?\\)", "g");
-
-                    elementManipulation = elementManipulation.replace(regex, manipulation);
-                    manipulateElement.attr("manipulate", elementManipulation);
-                    manipulateElement.trigger('manipulateChanged');
-                });
-            }
-        };
-    });
-
-    directives.directive('dateUpdate', function () {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-                el.on("focusout focusin keyup", function (event) {
-                    event.stopPropagation();
-                    var manipulateElement = $("[ismanipulate=true]"),
-                        manipulation = "dateTime(" + $("#dateFormat").val() + ")",
-                        elementManipulation = manipulateElement.attr("manipulate"),
-                        regex = new RegExp("dateTime\\(.*?\\)", "g");
-
-                    elementManipulation = elementManipulation.replace(regex, manipulation);
-                    manipulateElement.attr("manipulate", elementManipulation);
-                    manipulateElement.trigger('manipulateChanged');
-                });
-            }
-        };
-    });
-
-    directives.directive('dateManipulationUpdate', function() {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-                el.on("focusout focusin keyup", function (event) {
-                    event.stopPropagation();
-                    var
-                        manipKind = attrs.manipulationKind,
-                        manipulateElement = $("[ismanipulate=true]"),
-                        manipulation = manipKind + "(" + $("#" + manipKind).val() + ")",
-                        elementManipulation = manipulateElement.attr("manipulate"),
-                        regex = new RegExp(manipKind + "\\(.*?\\)", "g");
-
-                    elementManipulation = elementManipulation.replace(regex, manipulation);
-                    manipulateElement.attr("manipulate", elementManipulation);
-                    manipulateElement.trigger('manipulateChanged');
-                });
-            }
-        };
-    });
-
-    directives.directive('parsedateUpdate', function () {
-        return {
-            restrict : 'A',
-            require: '?ngModel',
-            link : function (scope, el, attrs) {
-                el.on("focusout focusin keyup", function (event) {
-                    event.stopPropagation();
-                    var manipulateElement = $("[ismanipulate=true]"),
-                        manipulation = "parseDate(" + $("#parseDate").val() + ")",
-                        elementManipulation = manipulateElement.attr("manipulate"),
-                        regex = new RegExp("parseDate\\(.*?\\)", "g");
-
-                    elementManipulation = elementManipulation.replace(regex, manipulation);
-                    manipulateElement.attr("manipulate", elementManipulation);
-                    manipulateElement.trigger('manipulateChanged');
-                });
-            }
-        };
-    });
-
     directives.directive('helpPopover', function($compile, $http) {
         return function(scope, element, attrs) {
             var msgScope = scope;
@@ -1071,124 +949,6 @@
                         return $compile(elem)(msgScope);
                     }
                 });
-            });
-        };
-    });
-
-    directives.directive('divPlaceholder', function() {
-        return {
-            restrict: 'A',
-            link: function(scope, element, attrs) {
-                var parent = scope, curText;
-
-                while (parent.msg === undefined) {
-                    parent = parent.$parent;
-                }
-
-                curText = parent.msg(attrs.divPlaceholder);
-
-                if (!element.text().trim().length) {
-                    element.html('<em style="color: gray;">' + curText + '</em>');
-                }
-
-                element.focusin(function() {
-                    if ($(this).text().toLowerCase() === curText.toLowerCase() || !$(this).text().length) {
-                        $(this).empty();
-                    }
-                });
-
-                element.focusout(function() {
-                    if ($(this).text().toLowerCase() === curText.toLowerCase() || !$(this).text().length) {
-                        $(this).html('<em style="color: gray;">' + curText + '</em>');
-                    }
-                });
-            }
-        };
-    });
-
-    directives.directive('actionSortableCursor', function () {
-       return {
-           restrict: 'A',
-           link: function (scope, element, attrs) {
-                angular.element(element).on({
-                    mousedown: function () {
-                        $(this).css('cursor', 'move');
-                    },
-                    mouseup: function () {
-                        $(this).css('cursor', 'auto');
-                    }
-                });
-           }
-       };
-    });
-
-    directives.directive('actionsPopover', function () {
-       return {
-           restrict: 'A',
-           link: function (scope, element, attrs) {
-                angular.element(element).popover({
-                    placement: 'right',
-                    trigger: 'hover',
-                    html: true,
-                    content: function () {
-                        var html = angular.element('<div style="text-align: left" />'),
-                            actions = (scope.item && scope.item.task && scope.item.task.actions) || scope.actions || [];
-
-                        angular.forEach(actions, function (action) {
-                            var div = angular.element('<div />'),
-                                img = angular.element('<img />'),
-                                name = angular.element('<span style="margin-left: 5px" />');
-
-                            img.attr('src', '../tasks/api/channel/icon?moduleName=' + action.moduleName);
-                            img.addClass('task-list-img');
-
-                            name.text(scope.msg(action.channelName) + ": " + scope.msg(action.displayName));
-
-                            div.append(img);
-                            div.append(name);
-
-                            html.append(div);
-                        });
-
-                        return html;
-                    }
-                });
-           }
-       };
-    });
-
-    directives.directive('triggerPopover', function () {
-        return {
-            restrict: 'A',
-            link: function (scope, element, attrs) {
-                angular.element(element).popover({
-                    placement: 'right',
-                    trigger: 'hover',
-                    html: true,
-                    content: function () {
-                        var html = angular.element('<div style="text-align: left" />'),
-                            div = angular.element('<div />'),
-                            img = angular.element('<img />'),
-                            name = angular.element('<span style="margin-left: 5px" />');
-
-                        img.attr('src', '../tasks/api/channel/icon?moduleName=' + scope.item.task.trigger.moduleName);
-                        img.addClass('task-list-img');
-                        name.text(scope.msg(scope.item.task.trigger.channelName) + ": " + scope.msg(scope.item.task.trigger.displayName));
-                        div.append(img);
-                        div.append(name);
-                        html.append(div);
-
-                        return html;
-                    }
-                });
-            }
-        };
-    });
-
-    directives.directive('taskStopPropagation', function () {
-        return function(scope, elem, attrs) {
-            elem.on('click', function (e) {
-               e.stopPropagation();
             });
         };
     });
