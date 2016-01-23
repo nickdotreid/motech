@@ -17,7 +17,7 @@
             </li>
         </ul>
     </div>
-    <div ng-if="source" class="dropdown">
+    <div ng-show="source" class="dropdown">
         <span id="step-{{index}}-object" class="label">{{msg('task.subsubsection.object')}}:</span>
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" ng-click="searchData.displayName='' ">
             {{msg(object.displayName || 'task.select')}}

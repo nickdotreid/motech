@@ -191,6 +191,8 @@
     });
 
     directives.directive('taskTriggerPopover', function ($compile) {
+        var popoverContentTemplate = '<div task-trigger-list channel="channel" ></div>';
+        // should compile or load actual tempalte beforehand...
         return {
             restrict: 'EA',
             scope: {
@@ -199,18 +201,23 @@
             link: function (scope, element, attrs) {
                 scope.msg = scope.$parent.msg;
                 element.on('click', function (event) {
-                    var closeClickListenter, listScope, popoverContent, closePopover;
+                    var closeFn, listScope, popoverContent, closePopover;
                     if($(event.target).hasClass("remove")) return;
                     event.stopPropagation();
+
+                    closeFn = function (event) {
+                        if (popoverContent[0].contains(event.target)) return;
+                        closePopover();
+                    }
 
                     closePopover = function () {
                         element.popover('destroy');
                         listScope.$destroy();
-                        closeClickListenter.off();
+                        $(document).off('click', closeFn);
                     }
 
                     listScope = scope.$new();
-                    popoverContent = $compile('<div task-trigger-list channel="channel" ></div>')(listScope);
+                    popoverContent = $compile(popoverContentTemplate)(listScope);
                     element.popover({
                         title: scope.msg('task.tooltip.availableTriggers'),
                         html: true,
@@ -219,10 +226,7 @@
                         // Fix popover height, so filtering doesn't change popover
                         popoverContent.css('height', popoverContent.height());
                     });
-                    closeClickListenter = $(document).on('click', function(event){
-                        if (popoverContent[0].contains(event.target)) return;
-                        closePopover();
-                    });
+                    $(document).on('click', closeFn);
                     scope.$on('task.trigger.update', closePopover);
                     // Dirty way to make sure popover is rendered...
                     setTimeout(function(){
