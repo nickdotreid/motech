@@ -386,10 +386,11 @@
         $scope.removeStep = function (index) {
             if (true) { // make sure object is non-empty
                 var msg = 'task.confirm.filterSet';
-                if(task.steps[index]['@type'] == TasksConstants.DATA_SOURCE_STEP) msg = 'task.confirm.dataSource';
+                if(task.steps[index] && task.steps[index]['@type'] == TasksConstants.DATA_SOURCE_STEP) msg = 'task.confirm.dataSource';
                 motechConfirm(msg, "task.header.confirm", function (val) {
                     if (val) {
                         task.removeStep(index);
+                        $scope.$apply(); // Yuck..
                     }
                 });
             } else {

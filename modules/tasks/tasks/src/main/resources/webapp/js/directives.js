@@ -365,10 +365,7 @@
                     $scope.lookup = lookup;
                 };
 
-            }],
-            link: function(scope, element, attrs, ngModel) {
-                //
-            }
+            }]
         }
     });
 

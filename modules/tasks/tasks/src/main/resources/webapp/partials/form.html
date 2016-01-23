@@ -41,7 +41,7 @@
 
                 <!------------------------ SHOW STEPS ------------------------>
                 <div ng-hide="!task.trigger.subject">
-                    <div ng-repeat="step in task.steps" task-step step="step" index="$index" remove="removeStep(step)">
+                    <div ng-repeat="step in task.steps" task-step step="step" index="$index" remove="removeStep($index)">
                         <div ng-if="step['@type']=='DataSource'" task-data-source step="step" index="$index" class="panel-body inside" available-fields-fn="getFields($index)" sources="dataSources"></div>
                         <div ng-if="step['@type']=='FilterSet'" task-filter-set ng-model="step" class="panel-body inside" available-fields-fn="getFields($index)" sources="dataSources"></div>
                     </div>

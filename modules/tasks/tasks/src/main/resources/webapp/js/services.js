@@ -57,8 +57,8 @@
             this.steps.push(data);
         }
         Task.prototype.removeStep = function (index) {
-            if(!this.taskConfig.steps[index]) return false;
-            this.taskConfig.steps.remove(index);
+            if(!this.steps[index]) return false;
+            this.steps.remove(index);
             return true;
         }
         Task.prototype.save = function () {
