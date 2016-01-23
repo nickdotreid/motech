@@ -312,6 +312,10 @@
             unblockUI();
         });
 
+        $scope.$on('task.trigger.update', function (event, moduleName, subject) {
+            $scope.selectTrigger(moduleName, subject);
+        });
+
         $scope.selectTrigger = function (moduleName, subject, confirm) {
             if ($scope.task.trigger && !confirm) {
                 motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
@@ -319,14 +323,12 @@
                 });
             } else {
                 var trigger = $scope.task.setTrigger(moduleName, subject);
-                $scope.selectedTrigger = trigger;
             }
         };
         $scope.removeTrigger = function () {
             motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
                 if (val) {
                     $scope.task.removeTrigger();
-                    delete $scope.selectedTrigger;
                 }
             });
         };
@@ -369,10 +371,6 @@
             } else {
                 $scope.selectedActionChannel[idx] = channel;
             }
-        };
-
-        $scope.getActions = function (idx) {
-            return [];
         };
 
         $scope.selectAction = function (idx, action) {

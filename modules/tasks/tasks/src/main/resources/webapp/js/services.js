@@ -40,7 +40,6 @@
             delete this.trigger;
             return true;
         }
-
         Task.prototype.addAction = function () {
             if (!this.actions) {
                 this.actions = [];
@@ -52,7 +51,6 @@
             this.actions.remove(index);
             return true;
         }
-
         Task.prototype.addStep = function (type) {
             var data = {};
             data['@type'] = type;
@@ -79,7 +77,6 @@
 
             return $http.post(URL, this);
         }
-
         return Task;
     }]);
 

@@ -174,6 +174,111 @@
         }
     });
 
+    directives.directive('taskTriggerList', function (){
+        return {
+            restrict: 'EA',
+            scope: {
+                channel: "="
+            },
+            templateUrl: '../tasks/partials/form-trigger-list.html',
+            link: function(scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
+                scope.selectTrigger = function (channel, trigger) {
+                    scope.$emit('task.trigger.update', channel.moduleName, trigger.subject);
+                }
+            }
+        }
+    });
+
+    directives.directive('taskTriggerPopover', function ($compile) {
+        return {
+            restrict: 'EA',
+            scope: {
+                channel: '='
+            },
+            link: function (scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
+                element.on('click', function (event) {
+                    var closeClickListenter, listScope, popoverContent, closePopover;
+                    if($(event.target).hasClass("remove")) return;
+                    event.stopPropagation();
+
+                    closePopover = function () {
+                        element.popover('destroy');
+                        listScope.$destroy();
+                        closeClickListenter.off();
+                    }
+
+                    listScope = scope.$new();
+                    popoverContent = $compile('<div task-trigger-list channel="channel" ></div>')(listScope);
+                    element.popover({
+                        title: scope.msg('task.tooltip.availableTriggers'),
+                        html: true,
+                        content: popoverContent
+                    }).on('shown.bs.popover', function() {
+                        // Fix popover height, so filtering doesn't change popover
+                        popoverContent.css('height', popoverContent.height());
+                    });
+                    closeClickListenter = $(document).on('click', function(event){
+                        if (popoverContent[0].contains(event.target)) return;
+                        closePopover();
+                    });
+                    scope.$on('task.trigger.update', closePopover);
+                    // Dirty way to make sure popover is rendered...
+                    setTimeout(function(){
+                        element.popover('show');
+                    }, 10);
+                });
+            }
+        }
+    });
+
+    directives.directive('taskTrigger', ['Channels', function (Channels){
+        return {
+            restrict: 'EA',
+            scope: {
+                trigger: '=',
+                removeFn: '&'
+            },
+            templateUrl: '../tasks/partials/form-trigger.html',
+            link: function (scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
+                var updateChannels = function () {
+                    scope.channels = [];
+                    if (!Channels.get()) return false;
+                    Channels.get().forEach(function (channel) {
+                        if(channel.triggerTaskEvents.length > 0){
+                            scope.channels.push(channel);
+                        }
+                    });
+                }
+                scope.$watch(function(){
+                    return Channels.get();
+                }, updateChannels);
+                updateChannels();
+
+                scope.removeTrigger = function () {
+                    scope.removeFn();
+                }
+            }
+        }
+    }]);
+
+    directives.directive('taskAction', ['Channels', function(Channels){
+        return {
+            restrict: 'EA',
+            require: 'ngModel',
+            scope: {
+                availableField: "="
+            },
+            templateUrl: '../tasks/partials/form-action.html',
+            link: function (scope, element, attrs, ngModel) {
+
+
+            }
+        }
+    }]);
+
     directives.directive('taskDataSource', function () {
         return {
             restrict: 'EA',
@@ -941,76 +1046,6 @@
                     manipulateElement.trigger('manipulateChanged');
                 });
             }
-        };
-    });
-
-    directives.directive('selectEvent', function() {
-        return function(scope, element, attrs) {
-            var elm = angular.element(element);
-            elm.click(function (event) {
-                var li = elm.parent('li'),
-                    content = $(element).find('.content-task'),
-                    visible = content.is(":visible"),
-                    other = $('[select-event=' + attrs.selectEvent + ']').not('#' + $(this).attr('id')),
-                    contentOffsetTop = $('#inner-center').offset().top,
-                    setContentCss;
-
-                    other.parent('li').not('.selectedTrigger').removeClass('active');
-                    other.find('.content-task').hide();
-
-                    if (visible) {
-                        if (!li.hasClass('selectedTrigger')) {
-                            li.removeClass('active');
-                        }
-
-                        content.hide();
-                    } else {
-                        li.addClass('active');
-                        content.show();
-                        content.removeClass('left right bottom top');
-                        content.parent().find('div.arrow').css({'top':'50%'});
-                        setContentCss = function () {
-                            if ($(content).children('.popover-content').height() > 200) {
-                                content.css({'height': '290'});
-                                content.children('.popover-content').css({'height': 200, 'overflow-y': 'auto'});
-                                content.parent().find('div.arrow').css({'top': function () {return ($(content).height()/2);}});
-                                content.css({'top': function () {return -($(content).height()/2  - 60);}});
-                            } else {
-                                content.css({'top': function () {return -($(content).height()/2 - 60);}});
-                            }
-                        };
-                        if (($(window).width() - $(this).offset().left) < 138 + $(content).width() && $(this).offset().left > $(content).width() && $(this).parent().parent().offset().left + ($(content).width()/2) < $(this).offset().left) {
-                            content.addClass('left');
-                            content.css({'left': function () {return -($(content).width() + 3);}});
-                            setContentCss();
-                        } else if (($(window).width() - ($(this).offset().left + 138)) > $(content).width() && !($(this).parent().parent().offset().left + ($(content).width()/2) < $(this).offset().left && $(this).offset().top - contentOffsetTop - 71 > 200 && $(content).children('.popover-content').height() + 11 < 200))  {
-                            content.addClass('right');
-                            content.css({'left': '125px'});
-                            setContentCss();
-                        } else if ($(this).offset().top - contentOffsetTop - 71 > 200 && $(content).children('.popover-content').height() + 11 < 200 && ($(window).width() - ($(this).offset().left + 108)) > $(content).width()) {
-                            content.addClass('top');
-                            content.children('.popover-content').css({'height': function () {return (content.children('.popover-content').children('ul').height()+15);}, 'overflow-y': 'auto'});
-                            content.css({'height': function () {return (content.children('.popover-content').children('ul').height() + content.children('.popover-title').height() + 33);}});
-                            content.css({'top': function () {return -($(content).height() + 8);}});
-                            content.css({'left': function () {return -($(content).width()/2 - 70);}});
-                            content.parent().find('div.arrow').css({'top': function() {return ($(content).height() + 2);}});
-                        } else {
-                            content.addClass('bottom');
-                            content.css({'top': '115px', 'height': '240'});
-                            if ($(content).children('.popover-content').children('ul').height() < 200) {
-                                content.css({'height': function () {return (content.children('.popover-content').children('ul').height() + content.children('.popover-title').height() + 30);}});
-                            } else {
-                                content.children('.popover-content').css({'height': 200, 'overflow-y': 'auto'});
-                            }
-                            if (($(window).width() - ($(this).offset().left + 108)) < $(content).width()) {
-                                content.css({'left': function () {return -($(content).width()/2 - 40);}});
-                            } else {
-                                content.css({'left': function () {return -($(content).width()/2 - 80);}});
-                            }
-                            content.parent().find('div.arrow').css({'top':'-11px'});
-                        }
-                    }
-            });
         };
     });
 

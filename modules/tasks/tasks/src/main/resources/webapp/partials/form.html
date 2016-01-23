@@ -35,7 +35,9 @@
                 </div>
 
                 <!------------------------ SELECT TRIGGER ------------------------>
-                <div ng-include="'../tasks/partials/form-trigger.html'"></div>
+                <div task-step>
+                    <div task-trigger trigger="task.trigger"></div>
+                </div>
 
                 <!------------------------ SHOW STEPS ------------------------>
                 <div ng-hide="!task.trigger.subject">
@@ -55,7 +57,9 @@
                     </div>
 
                     <!------------------------ SHOW ACTIONS ------------------------>
-                    <div ng-include="'../tasks/partials/form-action.html'"></div>
+                    <div ng-repeat="action in task.actions" task-step index="$index" remove="removeAction($index)" >
+                        <div task-action ng-model="action" available-fields="availableFields"></div>
+                    </div>
 
                     <!------------------------ ADD ACTIONS BUTTONS ------------------------>
                     <div class="row inside section-additives">

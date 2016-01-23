@@ -1,0 +1,6 @@
+<input ng-show="channel.triggerTaskEvents && channel.triggerTaskEvents.length &gt; 8" class="form-control" type="text" ng-model="searchTrigger.displayName" placeholder="{{msg('task.placeholder.searchTrigger')}}" />
+<ul class="trigger-list">
+    <li ng-repeat="trigger in channel.triggerTaskEvents | filter:searchTrigger">
+        <a ng-click="selectTrigger(channel, trigger)">{{msg(trigger.displayName)}}</a>
+    </li>
+</ul

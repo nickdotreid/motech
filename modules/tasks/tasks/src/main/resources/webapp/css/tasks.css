@@ -1071,6 +1071,11 @@ manipulation-sorter ol.sortable li.ui-state-highlight{
     min-width: 230px;
 }
 
+.tasks .popover .trigger-list{
+    max-height: 240px;
+    overflow: scroll;
+}
+
 .tasks textarea.form-control {
     min-height: 77px;
 }

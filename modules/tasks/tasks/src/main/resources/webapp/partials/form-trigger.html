@@ -1,46 +1,6 @@
-<div class="panel-group task-group" id="select-trigger" overflow-change expand-accordion>
-
-    <div class="panel-heading panel-header">
-        <div class="accordion-toggle cursor-auto">
-            <i class="fa fa-fw fa-lg fa-caret-down pointer" data-toggle="collapse" data-parent="#select-trigger" target="_self" href="#collapse-trigger"></i> {{msg('task.header.trigger')}}
-                            <span ng-hide="!task.trigger.displayName">
-                                &raquo; {{msg(task.trigger.channelName)}} : {{msg(task.trigger.displayName)}}
-                            </span>
-        </div>
-    </div>
-    <div id="collapse-trigger" class="panel-collapse stripes-bg collapse in overflowChange" style="overflow: visible;">
-        <div class="panel-body">
-            <div class="section-source">
-                <ul class="task-selector" ng-init="searchTrigger.displayName='' " data-ng-cloak="">
-                    <li class="task-panel pointer" ng-repeat="channel in util.channels.withTriggers(channels)">
-                        <div id="trigger-{{channel.moduleName}}" select-event="trigger" ng-click="searchTrigger.displayName='' ">
-                            <div>
-                                <a ng-click="removeTrigger($event)" ui-if="task.trigger && task.trigger.moduleName == channel.moduleName">
-                                    <i class="fa fa-times close-channel"></i>
-                                </a>
-                                <img ng-src="../tasks/api/channel/icon?moduleName={{channel.moduleName}}&moduleVersion={{channel.moduleVersion}}" class="panel-img" />
-                            </div>
-                            <span>{{msg(channel.displayName)}}</span>
-                            <div class="content-task popover fade in">
-                                <div class="arrow"></div>
-                                <h3 class="popover-title">{{msg('task.tooltip.availableTriggers')}}</h3>
-                                <div class="search-triggers" ng-show="channel.triggerTaskEvents && channel.triggerTaskEvents.length &gt; 8" task-stop-propagation>
-                                    <input class="form-control" type='text' ng-model="searchTrigger.displayName" placeholder="{{msg('task.placeholder.searchTrigger')}}">
-                                </div>
-                                <div class="popover-content">
-                                    <ul class="trigger-list">
-                                        <li ng-repeat="trigger in channel.triggerTaskEvents | filter:searchTrigger">
-                                            <a ng-click="selectTrigger(channel.moduleName, trigger.subject)">{{msg(trigger.displayName)}}</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-        </div>
-    </div>
-
-</div>
+<ul class="task-selector">
+    <li ng-repeat="channel in channels" task-trigger-popover channel="channel" id="trigger-{{channel.moduleName}}" class="channel channel-panel task-panel">
+        <a class="remove button-remove" ng-click="removeTrigger()" ui-if="trigger && trigger.moduleName == channel.moduleName">{{msg('tasks.trigger.remove')}}</a>
+        {{msg(channel.displayName)}}
+    </li>
+</ul>
