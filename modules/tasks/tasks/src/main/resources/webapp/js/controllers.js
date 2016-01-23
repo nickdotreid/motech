@@ -446,10 +446,10 @@
 
         $scope.getFields = function (beforeStep) {
             var fields = [];
-            if($scope.selectedTrigger) {
+            if(task.trigger) {
                Channels.getEventParameters(
-                $scope.selectedTrigger.moduleName,
-                $scope.selectedTrigger.subject)
+                task.trigger.moduleName,
+                task.trigger.subject)
                .forEach(function (field) {
                     fields.push(field);
                 });

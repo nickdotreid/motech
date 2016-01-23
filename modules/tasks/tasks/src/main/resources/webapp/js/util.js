@@ -132,10 +132,10 @@
             var str = "";
 
             switch(field.prefix){
-                case utils.TRIGGER_PREFIX:
+                case TasksConstants.TRIGGER_PREFIX:
                     str = "{0}.{1}".format(TasksConstants.TRIGGER_PREFIX, field.eventKey);
                     break;
-                case utils.DATA_SOURCE_PREFIX:
+                case TasksConstants.DATA_SOURCE_PREFIX:
                     str = "{0}.{1}.{2}#{3}.{4}".format(TasksConstants.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
                     break;
                 default:

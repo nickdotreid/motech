@@ -5,8 +5,8 @@
     </div>
 </div>
 <div class="form-group">
+    <span id="step-{{index}}-source" class="label">{{msg('task.subsubsection.source')}}</span>
     <div class="dropdown" >
-        <span id="step-{{index}}-source" class="label">{{msg('task.subsubsection.source')}}</span>
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#">
             {{msg(source.name || 'task.select')}}
             <span class="caret"></span>
@@ -17,8 +17,8 @@
             </li>
         </ul>
     </div>
+    <span id="step-{{index}}-object" class="label">{{msg('task.subsubsection.object')}}:</span>
     <div ng-show="source" class="dropdown">
-        <span id="step-{{index}}-object" class="label">{{msg('task.subsubsection.object')}}:</span>
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" ng-click="searchData.displayName='' ">
             {{msg(object.displayName || 'task.select')}}
         </button>
@@ -38,8 +38,8 @@
 </div>
 
 <div class="form-group" ui-if="object">
-    <span class="col-md-2 col-sm-3 control-label">{{msg('task.subsubsection.lookup')}}:</span>
-    <div class="btn-group offset-15">
+    <span class="label">{{msg('task.subsubsection.lookup')}}:</span>
+    <div class="dropdown">
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#">
             {{msg(lookup.displayName || 'task.select')}}
             <span class="caret"></span>
