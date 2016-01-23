@@ -1,45 +1,47 @@
 <div class="form-group control-section">
     <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
     <div class="form-inline col-md-10 col-sm-9 move-element">
-        <field ng-repeat="field in getFields() track by $index" field="field" draggable />
+        <field ng-repeat="field in availableFields track by $index" field="field" draggable />
     </div>
 </div>
 
 
-<div class="form-group">
-    <span class="col-md-2 col-sm-3 control-label">{{msg('task.channel')}}:</span>
-    <div class="btn-group offset-15">
-        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#">
-            {{taskMsg(selectedActionChannel[$index].displayName || 'task.select')}}
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-            <li ng-repeat="channel in util.channels.withActions(channels)">
-                <a ng-click="selectActionChannel($parent.$index, channel)">{{msg(channel.displayName)}}</a>
-            </li>
-        </ul>
+<div class="form-inline">
+    <div class="form-group">
+        <span class="col-md-2 col-sm-3 control-label">{{msg('task.channel')}}:</span>
+        <div class="btn-group offset-15">
+            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#">
+                {{msg(channel.displayName || 'task.select')}}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li ng-repeat="channel in channels">
+                    <a ng-click="selectChannel(channel)">{{msg(channel.displayName)}}</a>
+                </li>
+            </ul>
+        </div>
     </div>
 
-
-    <span ng-show="selectedActionChannel[$index]" class="offset-4">{{msg('task.action')}}:</span>
-    <div ng-show="selectedActionChannel[$index]" class="btn-group offset-15">
-        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#" ng-init="searchAction.displayName='' " ng-click="searchAction.displayName='' ">
-            {{taskMsg(selectedAction[$index].displayName || 'task.select')}}
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-            <li class="search-data-source" ng-show="getActions($index) && getActions($index).length &gt; 8" task-stop-propagation>
-                <input class="form-control" type="text" ng-model="searchAction.displayName" placeholder="{{msg('task.placeholder.searchAction')}}">
-            </li>
-            <li>
-                <ul class="select-limit">
-                    <li ng-repeat="a in getActions($index) | filter:searchAction">
-                        <a ng-click="selectAction($parent.$index, a)">{{taskMsg(a.displayName)}}</a>
-                    </li>
-                </ul>
-            </li>
-
-        </ul>
+    <div ng-show="channel" class="form-group">
+        <span  class="offset-4">{{msg('task.action')}}:</span>
+        <div class="btn-group offset-15">
+            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" target="_self" href="#" ng-init="searchAction.displayName='' " ng-click="searchAction.displayName='' ">
+                {{msg(action.displayName || 'task.select')}}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li class="search-data-source" ng-show="getActions() && getActions().length &gt; 8">
+                    <input class="form-control" type="text" ng-model="searchAction.displayName" placeholder="{{msg('task.placeholder.searchAction')}}">
+                </li>
+                <li>
+                    <ul class="select-limit">
+                        <li ng-repeat="action in getActions() | filter:searchAction">
+                            <a ng-click="selectAction(action)">{{msg(action.displayName)}}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 

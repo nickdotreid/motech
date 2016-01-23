@@ -312,13 +312,15 @@
                     if (val) $scope.selectTrigger(moduleName, subject, true);
                 });
             } else {
-                var trigger = $scope.task.setTrigger(moduleName, subject);
+                $scope.task.setTrigger(moduleName, subject);
+                $scope.$emit('fields.changed');
             }
         };
         $scope.removeTrigger = function () {
             motechConfirm('task.confirm.trigger', "task.header.confirm", function (val) {
                 if (val) {
                     $scope.task.removeTrigger();
+                    $scope.$emit('fields.changed');
                 }
             });
         };
@@ -457,13 +459,14 @@
             if (!$scope.task.steps) return fields;
             $scope.task.steps.forEach(function (step, index) {
                 if(step['@type'] != TasksConstants.DATA_SOURCE_STEP) return false;
-                if(beforeStep <= index) return false;
+                if(beforeStep && beforeStep <= index) return false;
                 DataSources.getFields(step.providerId, step.type).forEach(function (field) {
                     fields.push(field);
                 });
             });
             return fields;
         }
+        $scope.availableFields = [];
         $scope.$on('fields.changed', function(event) {
             if (event.targetScope == $scope) return;
             if (event.stopPropagation) event.stopPropagation();

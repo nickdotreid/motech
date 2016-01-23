@@ -271,13 +271,64 @@
     directives.directive('taskAction', ['Channels', function(Channels){
         return {
             restrict: 'EA',
-            require: 'ngModel',
             scope: {
-                availableField: "="
+                action: "=",
+                availableFieldsFn: "="
             },
             templateUrl: '../tasks/partials/form-action.html',
-            link: function (scope, element, attrs, ngModel) {
+            link: function (scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
 
+                var getAvailableFields = function() {
+                    scope.availableFields = scope.availableFieldsFn();
+                };
+                scope.$on('fields.changed', getAvailableFields);
+                getAvailableFields();
+
+                var updateChannels = function () {
+                    scope.channels = [];
+                    if (!Channels.get()) return false;
+                    Channels.get().forEach(function(channel) {
+                        if(channel.actionTaskEvents.length > 0) scope.channels.push(channel);
+                    });
+                }
+                scope.$watch(function(){
+                    return Channels.get();
+                }, updateChannels);
+                updateChannels();
+
+                scope.getActions = function(){
+                    var actions = [];
+                    if(!scope.channel) return actions;
+                    scope.channel.actionTaskEvents.forEach(function (action) {
+                        actions.push(action);
+                    });
+                    return actions;
+                }
+
+                scope.selectChannel = function (channel, confirm) {
+                    if(scope.action.moduleName && !confirm){
+                        motechConfirm('task.confirm.action', "task.header.confirm", function (val) {
+                            scope.selectChannel(channel, true);
+                        });
+                    } else {
+                        scope.channel = channel;
+                        scope.action = {
+                            channelName: channel.displayName,
+                            moduleName: channel.moduleName,
+                            moduleVersion: channel.moduleVersion
+                        };
+                    }
+                }
+                scope.selectAction = function (action) {
+                    scope.action.displayName = action.displayName;
+                    if (action.subject) scope.action.subject = action.subject;
+                    if (action.serviceInterface && action.serviceMethod) {
+                        scope.action.serviceInterface = action.serviceInterface;
+                        scope.action.serviceMethod = action.serviceMethod;
+                    }
+
+                }
 
             }
         }
