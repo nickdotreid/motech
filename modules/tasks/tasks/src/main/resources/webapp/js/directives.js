@@ -289,58 +289,54 @@
                 availableFieldsFn: '&'
             },
             templateUrl: '../tasks/partials/form-data-source.html',
-            controller: ['$scope', function ($scope) {
-                $scope.msg = $scope.$parent.msg;
-
+            link: function (scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
                 // Defaults
-                $scope.source = false;
-                $scope.object = false;
-                $scope.lookup = false;
-                $scope.failIfDataNotFound = false;
-                $scope.fields = false;
-
-                if (!$scope.fields) $scope.fields = [];
+                scope.source = false;
+                scope.object = false;
+                scope.lookup = false;
+                scope.failIfDataNotFound = false;
+                scope.fields = [];
 
                 // LOAD Source, Object & Lookup data
                 var getAvailableFields = function() {
-                    $scope.availableFields = $scope.availableFieldsFn();
+                    scope.availableFields = scope.availableFieldsFn();
                 };
-                $scope.$on('fields.changed', getAvailableFields);
+                scope.$on('fields.changed', getAvailableFields);
                 getAvailableFields();
 
-                $scope.$watch('fields', function(newFields){
-                    $scope.$emit('fields.changed');
+                scope.$watch('fields', function(newFields){
+                    scope.$emit('fields.changed');
                 });
-
-                $scope.$watch('source', function (newSource) {
+                scope.$watch('source', function (newSource) {
                     if(!newSource){
-                        delete $scope.step.providerId;
+                        delete scope.step.providerId;
                     } else {
-                        $scope.step.providerName = newSource.name; // if this is just used for display, remove
-                        $scope.step.providerId = newSource.id;
+                        scope.step.providerName = newSource.name; // if this is just used for display, remove
+                        scope.step.providerId = newSource.id;
                     }
-                    $scope.object = false; // reset dependants
+                    scope.object = false; // reset dependants
                 });
 
-                $scope.$watch('object', function (newObject) {
+                scope.$watch('object', function (newObject) {
                     if (!newObject) {
-                        delete $scope.step.type;
-                        delete $scope.fields;
+                        delete scope.step.type;
+                        delete scope.fields;
                     } else {
-                        $scope.step.type = newObject.type;
-                        $scope.fields = newObject.fields;
+                        scope.step.type = newObject.type;
+                        scope.fields = newObject.fields;
                     }
-                    $scope.lookup = false;
-                    $scope.failIfDataNotFound = false;
+                    scope.lookup = false;
+                    scope.failIfDataNotFound = false;
                 });
 
-                $scope.$watch('lookup', function (newLookup) {
+                scope.$watch('lookup', function (newLookup) {
                     if(!newLookup) {
-                        delete $scope.step.lookup;
+                        delete scope.step.lookup;
                     } else {
-                        $scope.step.lookup = [];
+                        scope.step.lookup = [];
                         newLookup.fields.forEach(function (field) {
-                            $scope.step.lookup.push({
+                            scope.step.lookup.push({
                                 field: field,
                                 value: '' // default...
                             });
@@ -348,24 +344,23 @@
                     }
                 });
 
-                $scope.$watch('failIfDataNotFound', function(newValue) {
-                    $scope.step.failIfDataNotFound = newValue;
+                scope.$watch('failIfDataNotFound', function(newValue) {
+                    scope.step.failIfDataNotFound = newValue;
                 });
 
-                $scope.selectDataSource = function (source) {
+                scope.selectDataSource = function (source) {
                     // modal to confirm change...
-                    $scope.source = source;
+                    scope.source = source;
                 }
 
-                $scope.selectObject = function (object) {
+                scope.selectObject = function (object) {
                     // modal to confirm change...
-                    $scope.object = object;
+                    scope.object = object;
                 };
-                $scope.selectLookup = function (lookup) {
-                    $scope.lookup = lookup;
+                scope.selectLookup = function (lookup) {
+                    scope.lookup = lookup;
                 };
-
-            }]
+            }
         }
     });
 
