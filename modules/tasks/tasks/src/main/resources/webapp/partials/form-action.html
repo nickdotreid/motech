@@ -50,85 +50,13 @@
     <label class="col-md-2 col-sm-3 control-label">{{msg(action.description)}}</label>
 </div>
 <div ui-if="action">
-    <div ng-class="{'has-warning': actionCssClassWarning(i), 'has-error': actionCssClassError(i)}" ng-repeat="parameter in action.actionParameters | filter: {hidden: false}" class="form-group clearfix">
-        <label class="col-md-2 col-sm-3 control-label tip unselectable">
-            {{msg(parameter.displayName)}}
-            <!------------------------ Tooltips ------------------------>
-            <span class="help-inline" ui-if="i.type == 'LIST'" help-popover="list" data-title="{{msg('task.header.listHelp')}}"><i class="fa fa-question-circle"></i></span>
-            <span class="help-inline" ui-if="i.type == 'MAP'" help-popover="map" data-title="{{msg('task.header.mapHelp')}}"><i class="fa fa-question-circle"></i></span>
-            <span class="help-inline" ui-if="actionCssClassWarning(parameter)" help-popover="warning" data-title="{{msg('task.header.warning')}}"><i class="fa fa-exclamation-triangle"></i></span>
-            <span class="help-inline" ui-if="actionCssClassError(parameter)" help-popover="error" data-title="{{msg('task.header.error')}}"><i class="fa sfa-exclamation-triangle"></i></span>
-        </label>
-
-        <!------------------------ Editable fields ------------------------>
-        <div class="form-inline col-md-10 col-sm-9">
-            <div ui-if="parameter.type == 'UNICODE'" data="i">
-                <editable-content  index="{{$index}}" data="parameter" type="UNICODE"> </editable-content>
-            </div>
-            <div ui-if="parameter.type == 'TEXTAREA' || parameter.type == 'LIST'" data="parameter" >
-                <editable-content  data="i" index="{{$index}}" type="TEXTAREA" ></editable-content>
-            </div>
-            <div ui-if="parameter.type == 'PERIOD'" data="parameter" >
-                <div ng-include="'../tasks/partials/widgets/content-editable-period.html'" data="parameter"></div>
-            </div>
-            <div ui-if=" parameter.type == 'MAP' " data="parameter">
-                <div ng-include="'../tasks/partials/widgets/content-editable-map.html'"></div>
-            </div>
-            <div ui-if="parameter.type == 'INTEGER' || parameter.type == 'LONG'" data="i">
-                <editable-content data="parameter" index="{{$index}}" type="INTEGER"></editable-content>
-            </div>
-            <div ui-if="parameter.type == 'DOUBLE'" data="parameter">
-                <editable-content  data="parameter" index="{{$index}}" type="DOUBLE"></editable-content>
-            </div>
-            <div ui-if="parameter.type == 'TIME'" data="parameter">
-                <editable-content  data="parameter" index="{{$index}}" action="{{$parent.$parent.$parent.$index}}" type="TIME"></editable-content>
-            </div>
-            <div ui-if="parameter.type == 'DATE'" data="parameter" class="">
-                <editable-content  data="parameter" index="{{$index}}" action="{{$parent.$parent.$parent.$index}}" type="DATE"></editable-content>
-            </div>
-            <div ui-if="parameter.type == 'BOOLEAN'">
-                <label class="radio-inline">
-                    <input type="radio" class=" " ng-checked="checkedBoolean($parent.$parent.$parent.$index, $index, 'true')" ng-click="setBooleanValue($parent.$parent.$parent.$index, $index, true)"/> {{msg('yes')}}
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" class="" ng-checked="checkedBoolean($parent.$parent.$parent.$index, $index, 'false')" ng-click="setBooleanValue($parent.$parent.$parent.$index, $index, false)"/> {{msg('no')}}
-                </label>
-                <label class="radio-inline">
-                    <editable-content data="parameter" index="$index" type="BOOLEAN"></editable-content>
-                </label>
-            </div>
-            <div ui-if="parameter.type == 'SELECT'">
-                <div class="btn-group form-group">
-                    <button class="btn btn-default dropdown-toggle"
-                            data-toggle="dropdown" target="_self" href="#"
-                            ng-click="searchOptions=''">
-                        {{msg(parameter.value || 'task.select')}}
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li class="search-data-source"
-                            ng-show="parameter.options.length &gt; 8"
-                            task-stop-propagation>
-                            <input class="form-control" type="text"
-                                   ng-model="searchOptions"
-                                   placeholder="{{msg('task.placeholder.searchOptions')}}">
-                        </li>
-                        <li>
-                            <ul class="select-limit">
-                                <li ng-repeat="option in parameter.options | filter:searchOptions">
-                                    <a ng-click="parameter.value = option">{{taskMsg(option)}}</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-                <div class="alert alert-danger alert-block"
-                     ng-show="parameter.options.length == 0">
-                    {{msg('task.info.noParameterOptions')}} {{taskMsg(parameter.displayName)}}
-                </div>
-            </div>
-        </div>
-    </div>
+    <task-action-field
+            ng-repeat="parameter in action.actionParameters | filter: {hidden: false}"
+            ng-model="values[parameter.displayName]"
+            field="parameter"
+            label="{{msg(parameter.displayName)}}"
+            type="parameter.type"
+    ></task-action-field>
 
     <!------------------------ Help button  ------------------------>
     <a data-target="#helpModal" role="button" class="btn btn-primary" data-toggle="modal">{{msg('task.help.modifications')}}</a>

@@ -16,21 +16,17 @@
             <form class="inside task form-horizontal">
                 <!------------------ ENTER TASK NAME ------------------>
                 <div class="inside-0">
-                    <div class="form-group ng-cloak" ng-class="{'has-error': !task.name}">
-                        <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.name')}}</label>
-                        <div class="col-md-10 col-sm-9">
-                            <input class="form-control" type='text' ng-model='task.name' id="task.name">
-                        </div>
+                    <div class="form-group" ng-class="{'has-error': !task.name}">
+                        <label>{{msg('task.name')}}</label>
+                        <input class="form-control" type='text' ng-model='task.name' id="task.name">
                     </div>
                 </div>
 
                 <!------------------ ENTER TASK DESCRIPTION ------------------>
                 <div class="inside-0">
                     <div class="form-group ng-cloak">
-                        <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.section.taskDescription')}}</label>
-                        <div class="col-md-10 col-sm-9">
-                            <textarea class="form-control" ng-model="task.description"></textarea>
-                        </div>
+                        <label>{{msg('task.section.taskDescription')}}</label>
+                        <textarea class="form-control" ng-model="task.description"></textarea>
                     </div>
                 </div>
 

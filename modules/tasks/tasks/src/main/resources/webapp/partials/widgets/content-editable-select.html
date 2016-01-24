@@ -1,0 +1,28 @@
+<div class="btn-group form-group">
+    <button class="btn btn-default dropdown-toggle"
+            data-toggle="dropdown" target="_self" href="#"
+            ng-click="searchOptions=''">
+        {{msg(parameter.value || 'task.select')}}
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        <li class="search-data-source"
+            ng-show="parameter.options.length &gt; 8"
+            task-stop-propagation>
+            <input class="form-control" type="text"
+                   ng-model="searchOptions"
+                   placeholder="{{msg('task.placeholder.searchOptions')}}">
+        </li>
+        <li>
+            <ul class="select-limit">
+                <li ng-repeat="option in parameter.options | filter:searchOptions">
+                    <a ng-click="parameter.value = option">{{taskMsg(option)}}</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<div class="alert alert-danger alert-block"
+     ng-show="parameter.options.length == 0">
+    {{msg('task.info.noParameterOptions')}} {{taskMsg(parameter.displayName)}}
+</div>

@@ -796,31 +796,38 @@
         return {
             restrict: 'E',
             replace : true,
-            transclude: true,
             scope: {
-                'data': '=',
-                'index': '@',
-                'action': '@'
+                type: '='
             },
-            compile: function (tElement, tAttrs, scope) {
-                var url = '../tasks/partials/widgets/content-editable-' + tAttrs.type.toLowerCase() + '.html',
-
-                templateLoader = $http.get(url, {cache: $templateCache})
-                    .success(function (html) {
-                        tElement.html(html);
-                    });
-
-                return function (scope, element, attrs) {
-                    templateLoader.then(function () {
-                        element.html($compile(tElement.html())(scope));
-                    });
-
-                    $timeout(function () {
-                        element.find('div').focusout();
-                    });
-                };
+            templateUrl: function (element, attrs) {
+                var type = attrs.type.toLowerCase();
+                if(type == 'list') type = 'textarea';
+                if(type == 'long') type = 'integer';
+                return '../tasks/partials/widgets/content-editable-'+type+'.html';
             }
         };
+    });
+
+    directives.directive('taskActionField', function (){
+        return {
+            restrict: 'EA',
+            replace: true,
+            require: 'ngModel',
+            scope: {
+                label: '@',
+                type: '=',
+                field: '='
+            },
+            templateUrl: '../tasks/partials/form-action-field.html',
+            link: function (scope, element, attrs) {
+                scope.hasWarning = function () {
+                    return false;
+                }
+                scope.hasError = function () {
+                    return true;
+                }
+            }
+        }
     });
 
     directives.directive('manipulationPopover', function ($compile) {

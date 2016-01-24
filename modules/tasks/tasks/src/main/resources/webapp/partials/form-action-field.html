@@ -1,0 +1,12 @@
+<div class="form-group">
+    <label>
+        {{label}}
+        <!------------------------ Tooltips ------------------------>
+        <span class="help-inline" ui-if="i.type == 'LIST'" help-popover="list" data-title="{{msg('task.header.listHelp')}}"><i class="fa fa-question-circle"></i></span>
+        <span class="help-inline" ui-if="i.type == 'MAP'" help-popover="map" data-title="{{msg('task.header.mapHelp')}}"><i class="fa fa-question-circle"></i></span>
+        <span class="help-inline" ui-if="actionCssClassWarning(parameter)" help-popover="warning" data-title="{{msg('task.header.warning')}}"><i class="fa fa-exclamation-triangle"></i></span>
+        <span class="help-inline" ui-if="actionCssClassError(parameter)" help-popover="error" data-title="{{msg('task.header.error')}}"><i class="fa sfa-exclamation-triangle"></i></span>
+    </label>
+
+    <editable-content type="type" />
+</div>
