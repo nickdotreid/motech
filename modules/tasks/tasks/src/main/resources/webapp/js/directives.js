@@ -271,13 +271,54 @@
     directives.directive('taskAction', ['Channels', function(Channels){
         return {
             restrict: 'EA',
+            require: 'ngModel',
             scope: {
-                action: "=",
                 availableFieldsFn: "="
             },
             templateUrl: '../tasks/partials/form-action.html',
-            link: function (scope, element, attrs) {
+            link: function (scope, element, attrs, ngModel) {
                 scope.msg = scope.$parent.msg;
+
+                ngModel.$formatters.push(function(modelValue) {
+                    var channel, action, values;
+                    if (modelValue && modelValue.moduleName){
+                        Channels.get().forEach(function(_channel){
+                            if(modelValue.moduleName == _channel.moduleName) channel = _channel;
+                        });
+                    }
+                    if(modelValue && channel && modelValue.displayName){
+                        channel.actionTaskEvents.forEach(function(_action){
+                            if(modelValue.displayName == _action.displayName) action = _action;
+                        });
+                    }
+
+                    // format values;
+                    return {
+                        channel: channel,
+                        action: action,
+                        values: values
+                    };
+                });
+
+                ngModel.$parsers.push(function(viewValue) {
+                    if(!viewValue || !viewValue.channel || !viewValue.action) return {};
+                    return {
+                        channelName: viewValue.channel.displayName,
+                        moduleName: viewValue.channel.moduleName,
+                        moduleVersion: viewValue.channel.moduleVersion,
+                        displayName: viewValue.action.displayName,
+                        subject: viewValue.action.subject,
+                        serviceInterface: viewValue.action.serviceInterface,
+                        serviceMethod: viewValue.action.serviceMethod
+                    }
+                });
+
+                scope.$watch('channel + action', function(){
+                    ngModel.$setViewValue({
+                        channel: scope.channel,
+                        action: scope.action
+                    });
+                });
 
                 var getAvailableFields = function() {
                     scope.availableFields = scope.availableFieldsFn();
@@ -307,27 +348,21 @@
                 }
 
                 scope.selectChannel = function (channel, confirm) {
-                    if(scope.action.moduleName && !confirm){
+                    if(scope.channel && !confirm){
                         motechConfirm('task.confirm.action', "task.header.confirm", function (val) {
                             scope.selectChannel(channel, true);
                         });
-                    } else {
-                        scope.channel = channel;
-                        scope.action = {
-                            channelName: channel.displayName,
-                            moduleName: channel.moduleName,
-                            moduleVersion: channel.moduleVersion
-                        };
+                        return;
                     }
+                    scope.channel = channel;
                 }
-                scope.selectAction = function (action) {
-                    scope.action.displayName = action.displayName;
-                    if (action.subject) scope.action.subject = action.subject;
-                    if (action.serviceInterface && action.serviceMethod) {
-                        scope.action.serviceInterface = action.serviceInterface;
-                        scope.action.serviceMethod = action.serviceMethod;
+                scope.selectAction = function (action, confirm) {
+                    if(scope.action && !confirm){
+                        motechConfirm('task.confirm.action', "task.header.confirm", function (val) {
+                            if(val) scope.selectAction(action, true);
+                        });
                     }
-
+                    scope.action = action;
                 }
 
             }

@@ -58,7 +58,7 @@
 
                     <!------------------------ SHOW ACTIONS ------------------------>
                     <div ng-repeat="action in task.actions" task-step index="$index" remove="removeAction($index)" >
-                        <div task-action action="action" available-fields-fn="getFields"></div>
+                        <div task-action ng-model="action" available-fields-fn="getFields"></div>
                     </div>
 
                     <!------------------------ ADD ACTIONS BUTTONS ------------------------>
