@@ -7,6 +7,6 @@
         <span class="help-inline" ui-if="actionCssClassWarning(parameter)" help-popover="warning" data-title="{{msg('task.header.warning')}}"><i class="fa fa-exclamation-triangle"></i></span>
         <span class="help-inline" ui-if="actionCssClassError(parameter)" help-popover="error" data-title="{{msg('task.header.error')}}"><i class="fa sfa-exclamation-triangle"></i></span>
     </label>
-
-    <editable-content type="type" />
+    {{type}}
+    <editable-content type="{{type}}" ></editable-content>
 </div>

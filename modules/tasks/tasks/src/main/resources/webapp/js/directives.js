@@ -796,9 +796,6 @@
         return {
             restrict: 'E',
             replace : true,
-            scope: {
-                type: '='
-            },
             templateUrl: function (element, attrs) {
                 var type = attrs.type.toLowerCase();
                 if(type == 'list') type = 'textarea';
