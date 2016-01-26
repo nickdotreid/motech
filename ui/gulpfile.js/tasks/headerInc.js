@@ -2,7 +2,7 @@ var config = require('../config');
 var gulp = require('gulp');
 var path = require('path');
 var mkdirp = require('mkdirp');
-var nunjucks = require('nunjucks');
+var jade = require('nunjucks');
 var fs = require('fs');
 var argv = require('yargs').argv;
 
