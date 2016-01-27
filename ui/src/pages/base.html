@@ -1,9 +1,61 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        {% include "partials/header.html" %}
-    </head>
-    <body>
-        <h1>Base title</h1>
-        <p>Sample content...</p>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <title>Error Page: MOTECH</title>
+    {% include "partials/header.html" %}
+</head>
+
+<body>
+
+<div class="bodywrap">
+    <div class="header">
+        <div class="container">
+            <a href="/">
+                <div class="dashboard-logo">
+                    <img class="logo" alt="Logo - Mobile Technology for Community Health" src="{{staticPath}}/img/motech-logo.gif">
+                </div>
+            </a>
+            <div class="hidden-xs hidden-sm">
+                <div class="header-title">
+                    Error Page: 500 Server Error
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="navbar-wrapper navbar-default">
+        <div class="header-nav navbar error-code">
+            <div class="navbar-inner">
+                <div class="container">
+                    <div class="col-md-12 error-content">
+                        <h1>This is an error code and a short description</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="container">
+        <div class="col-md-12 error-content">
+            <p>
+                ${longDesc}
+            </p>
+            <p>
+                Get more info: <a href="http://docs.motechproject.org" target="_blank">docs.motechproject.org</a>
+            </p>
+            <p>
+                <a class="btn btn-default" href="/">Go Back</a>
+                <a class="btn btn-default" href="/logout"><span class="fa fa-power-off"></span>&nbsp;Logout</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+</body>
 </html>

@@ -9,13 +9,14 @@ var paths = {
     dest: path.join(config.assets.dest, 'css')
 };
 
-var outputPath = path.join(config.root.dest, 'styleguide');
+var outputPath = path.join(config.root.dest, config.styleguidePath);
 
 gulp.task('styleguide:generate', function() {
+
   return gulp.src(path.join(config.assets.src, 'sass/**/*.scss'))
     .pipe(styleguide.generate({
         title: 'MOTECH Styleguide',
-        rootPath: outputPath,
+        appRoot: config.styleguidePath,
         overviewPath: path.join('README.md')
       }))
     .pipe(gulp.dest(outputPath));

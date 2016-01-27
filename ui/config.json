@@ -7,5 +7,6 @@
     "src": "./src",
     "dest": "./build/assets"
   },
-  "staticPath": "/assets"
+  "staticPath": "/assets",
+  "styleguidePath": "/styleguide"
 }
