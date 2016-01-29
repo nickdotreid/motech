@@ -450,21 +450,22 @@
                          return null;
                       },
                       html: true,
-                      content: '<manipulation-sorter type="'+scope.manipulationType+'" />', // I'd rather compile here...
+                      content: $compile('<manipulation-sorter type="'+scope.manipulationType+'" />')(scope),
                       placement: "auto left",
                       trigger: 'manual'
                     }).on('shown.bs.popover', function(event){
                       var popoverContent = $('.popover-content',$(event.target).next('.popover'))[0];
-                      $compile(popoverContent)(scope);
-
                       $(document).on('click', function(event){
                         if (!popoverContent.contains(event.target)){
                             $(document).off(event);
                             hidePopup();
                         }
                       });
-
-                    }).popover('show');
+                    });
+                    // Call popover('show') late, so $compile & DOM have chance to update.
+                    setTimeout(function(){
+                        element.popover('show');
+                    }, 10);
                 };
 
                 element.click(function (event) {
