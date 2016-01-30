@@ -258,7 +258,6 @@
             link: function (scope, element, attrs, ngModel) {
                 element.droppable({
                     drop: function (event, ui) {
-                        // Gross way to get the data...
                         var field = ui.draggable.data('value');
                         scope.$emit('field.dropped', field);
                     }
@@ -314,13 +313,17 @@
                 if (!ngModel){
                     return false;
                 }
-                var read = function () {
+                var formatField = function (field) {
+                    return '{{{0}}}'.format(
+                        ManageTaskUtils.formatField(field)
+                        );
+                }, read = function () {
                     var container = $('<div></div>');
                     element.contents().each(function(){
                         var field, ele = $(this);
                         if(this.tagName && this.tagName.toLowerCase() === 'field'){
                             field = ele.data('value');
-                            container.append(ManageTaskUtils.formatField(field));
+                            container.append(formatField(field));
                         }else{
                             container.append(ele.text());
                         }
@@ -344,7 +347,7 @@
                                 element.append(viewValueStr.substring(0, matchStart));
                             }
                             fieldScope = scope.$parent.$new();
-                            fieldStr = viewValueStr.substr(matchStart, match.length);
+                            fieldStr = viewValueStr.substr(matchStart, match.length).replace('{{','').replace('}}','');
                             fieldScope.field = ManageTaskUtils.parseField(fieldStr, scope.$parent.getAvailableFields());
                             matchElement = $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
                             element.append(matchElement);
@@ -366,8 +369,7 @@
                     if(!field){
                         return false;
                     }
-                    // maybe append formatted field at cursor point?
-                    ngModel.$setViewValue(read() + ManageTaskUtils.formatField(field));
+                    ngModel.$setViewValue(read() + formatField(field));
                     scope.$apply();
                 });
 
@@ -550,7 +552,7 @@
                 };
                 this.removeManipulation = function (manipulationStr) {
                     var obj, manipulations = [], returnVal = false;
-                    for (obj; of $scope.manipulations) {
+                    for (obj of $scope.manipulations) {
                         if(obj.type !== manipulationStr){
                             manipulations.push(obj);
                         }
@@ -564,7 +566,7 @@
                 };
                 this.isActive = function (manipulationStr) {
                     var obj;
-                    for (obj; of $scope.manipulations) {
+                    for (obj of $scope.manipulations) {
                         if (obj.type === manipulationStr){
                             return true;
                         }

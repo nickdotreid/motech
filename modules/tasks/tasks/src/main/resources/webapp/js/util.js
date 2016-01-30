@@ -491,7 +491,7 @@
                     str += "?{0}({1})".format(manipulation.type, manipulation.argument);
                 });
             }
-            return "{{" + str + "}}";
+            return str;
         };
         utils.parseField = function (str, existingFields) {
             if(!str){
@@ -500,19 +500,12 @@
             if(!existingFields || !Array.isArray(existingFields)){
                 existingFields=[];
             }
-            // Remove formatting (if present)
-            if(str.substring(0,2)==='{{'){
-                str = str.substring(2,str.length);
-            }
-            if(str.substr(-2,2)==='}}'){
-                str = str.substr(0,str.length-2);
-            }
             var manipulations = str.split('?');
             str = manipulations.shift();
             var field = {};
             field.displayName = str;
             existingFields.forEach(function (exField) {
-                if("{{" + str + "}}" === utils.formatField(exField)){
+                if(str === utils.formatField(exField)){
                     field = Object.assign({}, exField);
                 }
             });
