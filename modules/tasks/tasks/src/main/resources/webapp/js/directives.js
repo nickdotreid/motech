@@ -216,17 +216,21 @@
                 editable: "=?"
             },
             link: function (scope, element, attrs) {
-                if(!scope.field.manipulations || !Array.isArray(scope.field.manipulations)) scope.field.manipulations = [];
+                if(!scope.field.manipulations || !Array.isArray(scope.field.manipulations)){
+                    scope.field.manipulations = [];
+                }
 
                 element.data('value', scope.field);
 
                 element.click(function (event) {
-                    if(!$(event.target).hasClass("field-remove")) return;
+                    if(!$(event.target).hasClass("field-remove")){
+                        return false;
+                    }
                     element.remove();
                 });
             },
             templateUrl: '../tasks/partials/field.html'
-        }
+        };
     });
 
     directives.directive('draggable', function () {
@@ -254,8 +258,8 @@
             link: function (scope, element, attrs, ngModel) {
                 element.droppable({
                     drop: function (event, ui) {
-                        var field = ui.draggable.data('value'); // Gross way to get the data...
-                        var fieldString = ManageTaskUtils.formatField(field);
+                        // Gross way to get the data...
+                        var field = ui.draggable.data('value');
                         scope.$emit('field.dropped', field);
                     }
                 });
@@ -307,14 +311,15 @@
             restrict: 'A',
             require: '?ngModel',
             link: function (scope, element, attrs, ngModel) {
-                if (!ngModel) return;
-
+                if (!ngModel){
+                    return false;
+                }
                 var read = function () {
                     var container = $('<div></div>');
                     element.contents().each(function(){
-                        var ele = $(this);
-                        if(this.tagName && this.tagName.toLowerCase() == 'field'){
-                            var field = ele.data('value');
+                        var field, ele = $(this);
+                        if(this.tagName && this.tagName.toLowerCase() === 'field'){
+                            field = ele.data('value');
                             container.append(ManageTaskUtils.formatField(field));
                         }else{
                             container.append(ele.text());
@@ -324,20 +329,24 @@
                 };
 
                 ngModel.$render = function () {
+                    var viewValueStr, matches;
                     element.html("");
-                    if(!ngModel.$viewValue) return;
-                    var viewValueStr = ngModel.$viewValue; // copy becuase we are destructive with the value
-                    var matches = viewValueStr.match(/{{[^{{]+}}/gi);
+                    if(!ngModel.$viewValue){
+                        return false;
+                    }
+                    viewValueStr = ngModel.$viewValue; // copy becuase we are destructive with the value
+                    matches = viewValueStr.match(/{{[^{{]+}}/gi);
                     if(matches){
                         matches.forEach(function(match){
-                            var matchStart = viewValueStr.indexOf(match);
+                            var matchStart, fieldScope, fieldStr, matchElement;
+                            matchStart = viewValueStr.indexOf(match);
                             if(matchStart > 0){
                                 element.append(viewValueStr.substring(0, matchStart));
                             }
-                            var fieldScope = scope.$parent.$new();
-                            var fieldStr = viewValueStr.substr(matchStart, match.length);
+                            fieldScope = scope.$parent.$new();
+                            fieldStr = viewValueStr.substr(matchStart, match.length);
                             fieldScope.field = ManageTaskUtils.parseField(fieldStr, scope.$parent.getAvailableFields());
-                            var matchElement = $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
+                            matchElement = $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
                             element.append(matchElement);
 
                             viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
@@ -354,7 +363,9 @@
 
                 scope.$on('field.dropped', function(event, field) {
                     event.stopPropagation();
-                    if(!field) return;
+                    if(!field){
+                        return false;
+                    }
                     // maybe append formatted field at cursor point?
                     ngModel.$setViewValue(read() + ManageTaskUtils.formatField(field));
                     scope.$apply();
@@ -370,7 +381,9 @@
 
                 element.bind('blur', function (event) {
                     event.stopPropagation();
-                    if(element[0] != event.target) return;
+                    if(element[0] !== event.target){
+                        return;
+                    }
                     ngModel.$setViewValue(read());
                     scope.$apply();
                 });
@@ -421,21 +434,24 @@
                 manipulationType: "="
             },
             link: function (scope, element, attrs) {
-                if(!scope.manipulationType) return false;
-                if (['UNICODE', 'TEXTAREA', 'DATE'].indexOf(scope.manipulationType) == -1) return false;
-                if(!scope.manipulations) return false; // Break if isn't bound...
-
-                var filter = scope.$parent.filter; // Should pull in better way...
-
-                // Get real source.
+                var filter, hidePopup, showPopup;
+                if(!scope.manipulationType){
+                    return false;
+                }
+                if (['UNICODE', 'TEXTAREA', 'DATE'].indexOf(scope.manipulationType) === -1){
+                    return false;
+                }
+                if(!scope.manipulations){ // Break if isn't bound...
+                    return false;
+                }
+                filter = scope.$parent.filter;
                 scope.msg = function (str) {
                     return str;
-                }
-
-                var hidePopup = function () {
+                };
+                hidePopup = function () {
                     element.removeClass('active');
                     element.popover('destroy');
-                },
+                };
                 showPopup = function () {
                     element.addClass('active');
                     element.popover({
@@ -469,8 +485,12 @@
                 };
 
                 element.click(function (event) {
-                    if ($(event.target).hasClass('field-remove')) return;
-                    if (element.hasClass('active')) return;
+                    if ($(event.target).hasClass('field-remove')){
+                        return;
+                    }
+                    if (element.hasClass('active')){
+                        return;
+                    }
                     event.stopPropagation();
                     window.getSelection().removeAllRanges(); // Make sure no text is selected...
                     showPopup();
@@ -484,12 +504,10 @@
             restrict: 'EA',
             templateUrl: '../tasks/partials/manipulation-sorter.html',
             link: function (scope, element, attrs) {
-
                 $('.sortable', element).sortable({
                     placeholder: "ui-state-highlight",
                     update: function (event, ui) {
-                        var sorted = $(event.target);
-                        var manipulations = [];
+                        var sorted = $(event.target), manipulations = [];
                         $('.manipulation', sorted).each(function(){
                             manipulations.push({
                                 type: $(this).attr('type'),
@@ -511,44 +529,50 @@
                     {type:'split', argumentType:'text'},
                     {type:'substring', argumentType:'text'},
                     {type:'format', argumentType:'format'},
-                    {type:'parseDate', argumentType:'text'},
+                    {type:'parseDate', argumentType:'text'}
                 ];
-
-                if ($scope.type == 'DATE') true;
-                if ($scope.type == 'DATE2DATE') true;
-
+                if ($scope.type === 'DATE'){
+                    true;
+                }
+                if ($scope.type === 'DATE2DATE'){
+                    true;
+                }
                 $scope.availableManipulations = stringManipulations;
-
-
                 this.addManipulation = function (type, argument) {
-                    if(!argument) argument = "";
+                    if(!argument){
+                        argument = "";
+                    }
                     $scope.manipulations.push({
                         type: type,
                         argument: argument
                     });
                     $scope.$apply();
-                }
-
+                };
                 this.removeManipulation = function (manipulationStr) {
-                    var manipulations = [];
-                    var returnVal = false;
-                    for (var obj of $scope.manipulations) {
-                        if(obj.type != manipulationStr) manipulations.push(obj);
-                        if(obj.type == manipulationStr) returnVal = true;
-                    }
+                    var obj, manipulations = [], returnVal = false;
+                    for (obj; of $scope.manipulations) {
+                        if(obj.type !== manipulationStr){
+                            manipulations.push(obj);
+                        }
+                        if(obj.type === manipulationStr){
+                            returnVal = true;
+                        }
+                    };
                     $scope.manipulations = manipulations;
                     $scope.$apply();
                     return returnVal;
-                }
-
+                };
                 this.isActive = function (manipulationStr) {
-                    for (var obj of $scope.manipulations) {
-                        if (obj.type == manipulationStr) return true;
-                    }
+                    var obj;
+                    for (obj; of $scope.manipulations) {
+                        if (obj.type === manipulationStr){
+                            return true;
+                        }
+                    };
                     return false;
-                }
+                };
             }]
-        }
+        };
     });
 
     directives.directive('manipulation', function ($compile) {
@@ -564,20 +588,21 @@
             link : function (scope, element, attrs, manipulationSorter) {
                 scope.msg = scope.$parent.msg;
                 scope.type = attrs.type;
-                if(attrs.active) scope.active = true;
-
+                if(attrs.active){
+                    scope.active = true;
+                }
                 if(attrs.active) {
                     var attributeFieldTemplate = false;
                     if (['join', 'split', 'substring', 'parsedate'].indexOf(scope.type) >= 0) {
                         attributeFieldTemplate = '<input type="text" ng-model="argument" />';
-                        if(!scope.argument) scope.argument = "";
+                        if(!scope.argument){
+                            scope.argument = "";
+                        }
                         element.append($compile(attributeFieldTemplate)(scope));
                     }
-
                     scope.$watch('argument', function(newValue) {
                         element.data('argument', newValue);
                     });
-
                     element.on("click", ".remove", function(){
                         manipulationSorter.removeManipulation(scope.type);
                     });
@@ -591,7 +616,6 @@
                             element.show();
                         }
                     });
-
                     element.on('click', function () {
                         manipulationSorter.addManipulation(scope.type);
                     });

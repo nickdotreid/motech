@@ -471,54 +471,55 @@
                 return defer.promise;
             }
         };
-
         utils.formatField = function (field) {
-            if(!field) return "";
+            if(!field){
+                return "";
+            }
             var str = "";
-
             switch(field.prefix){
                 case utils.TRIGGER_PREFIX:
                     str = "{0}.{1}".format(utils.TRIGGER_PREFIX, field.eventKey);
                     break;
                 case utils.DATA_SOURCE_PREFIX:
-                    str = "{0}.{1}.{2}#{3}.{4}".format($scope.util.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
+                    str = "{0}.{1}.{2}#{3}.{4}".format(utils.DATA_SOURCE_PREFIX, field.providerId, field.type, field.objectId, field.fieldKey);
                     break;
                 default:
                     str = field.displayName;
             }
-
             if (field.manipulations && Array.isArray(field.manipulations)) {
                 field.manipulations.forEach(function(manipulation) {
                     str += "?{0}({1})".format(manipulation.type, manipulation.argument);
                 });
             }
-
             return "{{" + str + "}}";
-        }
-
+        };
         utils.parseField = function (str, existingFields) {
-            if(!str) return false;
-            if(!existingFields || !Array.isArray(existingFields)) existingFields=[];
+            if(!str){
+                return false;
+            }
+            if(!existingFields || !Array.isArray(existingFields)){
+                existingFields=[];
+            }
             // Remove formatting (if present)
-            if(str.substring(0,2)=='{{') str = str.substring(2,str.length);
-            if(str.substr(-2,2)=='}}') str = str.substr(0,str.length-2);
-
+            if(str.substring(0,2)==='{{'){
+                str = str.substring(2,str.length);
+            }
+            if(str.substr(-2,2)==='}}'){
+                str = str.substr(0,str.length-2);
+            }
             var manipulations = str.split('?');
             str = manipulations.shift();
-
             var field = {};
             field.displayName = str;
-
             existingFields.forEach(function (exField) {
-                if("{{" + str + "}}" == utils.formatField(exField)){
+                if("{{" + str + "}}" === utils.formatField(exField)){
                     field = Object.assign({}, exField);
                 }
             });
-
             field.manipulations = [];
             manipulations.forEach(function (manipulationStr) {
-                var manipulation = {};
-                var parts = manipulationStr.split('(');
+                var manipulation = {},
+                parts = manipulationStr.split('(');
                 manipulation.type = parts.shift();
                 if(parts.length>0) {
                     manipulation.argument = parts[0].replace(')','');

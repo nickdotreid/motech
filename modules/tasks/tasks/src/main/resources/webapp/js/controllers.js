@@ -1401,7 +1401,9 @@
             }
             $scope.getDataSources().forEach(function (service) {
                 var serviceObj = $scope.findObject(service.providerId, service.type);
-                if (!serviceObj.fields) return false;
+                if (!serviceObj.fields){
+                    return false;
+                }
                 serviceObj.fields.forEach(function (field) {
                     field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
                     field.providerName = service.providerName;
@@ -1410,7 +1412,7 @@
                 });
             });
             return fields;
-        }
+        };
     });
 
     controllers.controller('TasksLogCtrl', function ($scope, Tasks, Activities, $routeParams, $filter) {
