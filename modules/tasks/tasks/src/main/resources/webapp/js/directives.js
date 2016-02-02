@@ -338,7 +338,7 @@
                         return false;
                     }
                     viewValueStr = ngModel.$viewValue; // copy becuase we are destructive with the value
-                    matches = viewValueStr.match(/{{[^{{]+}}/gi);
+                    matches = viewValueStr.match(/\{\{[^\{\{]+\}\}/gi);
                     if(matches){
                         matches.forEach(function(match){
                             var matchStart, fieldScope, fieldStr, matchElement;
