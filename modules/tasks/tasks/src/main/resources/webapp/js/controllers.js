@@ -350,9 +350,6 @@
                             if (source && object) {
                                 step.providerName = source.name;
                                 step.displayName = object.displayName;
-                                angular.forEach(step.lookup, function(lookupField) {
-                                    lookupField.value = $scope.util.convertToView($scope, 'UNICODE', lookupField.value);
-                                });
                             }
                         }
                     });
