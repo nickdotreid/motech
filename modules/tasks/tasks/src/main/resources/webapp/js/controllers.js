@@ -398,7 +398,6 @@
 
                                     angular.forEach($scope.selectedAction[idx].actionParameters, function (param) {
                                         param.value = info.values[param.key] || '';
-                                        param.value = $scope.util.convertToView($scope, param.type, param.value);
                                     });
                                 });
                             }
@@ -1115,7 +1114,7 @@
                 }
 
                 angular.forEach(action.actionParameters, function (param) {
-                    $scope.task.actions[idx].values[param.key] = param.value; // This is what we are aiming for
+                    $scope.task.actions[idx].values[param.key] = param.value;
 
                     if (!param.required && isBlank($scope.task.actions[idx].values[param.key])) {
                         delete $scope.task.actions[idx].values[param.key];
@@ -1198,7 +1197,7 @@
         $scope.showHelp = function () {
             $('#helpModalDate').modal();
         };
-
+/*
         $scope.changeFormatInput = function (newData) {
             $timeout(function() {
                 $scope.formatInput = [];
@@ -1377,7 +1376,7 @@
 
             return value;
         };
-
+*/
         $scope.taskMsg = function(message) {
             if (message === undefined) {
                 return "";
@@ -1398,15 +1397,17 @@
                     fields.push(field);
                 });
             }
-            $scope.getDataSources().forEach(function (service) {
-                var serviceObj = $scope.findObject(service.providerId, service.type);
-                if (!serviceObj.fields){
+            $scope.getDataSources().forEach(function (source) {
+                var service = $scope.findObject(source.providerId, source.type);
+                if (!service || !service.fields){
                     return false;
                 }
-                serviceObj.fields.forEach(function (field) {
+                service.fields.forEach(function (_field) {
+                    var field =  JSON.parse(JSON.stringify(_field));
                     field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
-                    field.providerName = service.providerName;
-                    field.objectId = serviceObj.id;
+                    field.providerName = source.providerName;
+                    field.providerType = source.type;
+                    field.objectId = source.objectId;
                     fields.push(field);
                 });
             });
