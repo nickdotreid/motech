@@ -1124,10 +1124,6 @@
                     if (step.lookup === undefined) {
                         step.lookup = [];
                     }
-                    angular.forEach(step.lookup, function(lookupField) {
-                        lookupField.value = $scope.util.convertToServer($scope, lookupField.value || '');
-                    });
-
                 }
             });
 
@@ -1194,7 +1190,7 @@
         $scope.showHelp = function () {
             $('#helpModalDate').modal();
         };
-/*
+
         $scope.changeFormatInput = function (newData) {
             $timeout(function() {
                 $scope.formatInput = [];
@@ -1373,7 +1369,7 @@
 
             return value;
         };
-*/
+
         $scope.taskMsg = function(message) {
             if (message === undefined) {
                 return "";
@@ -1389,27 +1385,41 @@
         $scope.getAvailableFields = function () {
             var fields = [];
             if($scope.selectedTrigger) {
-                $scope.selectedTrigger.eventParameters.forEach(function (field) {
+                $scope.selectedTrigger.eventParameters.forEach(function (_field) {
+                    var field = JSON.parse(JSON.stringify(_field));
                     field.prefix = ManageTaskUtils.TRIGGER_PREFIX;
                     fields.push(field);
                 });
             }
-            $scope.getDataSources().forEach(function (source) {
-                var service = $scope.findObject(source.providerId, source.type);
-                if (!service || !service.fields){
-                    return false;
-                }
-                service.fields.forEach(function (_field) {
-                    var field =  JSON.parse(JSON.stringify(_field));
-                    field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
-                    field.providerName = source.providerName;
-                    field.providerType = source.type;
-                    field.objectId = source.objectId;
-                    fields.push(field);
+            var dataSources = $scope.getDataSources();
+            if(dataSources && Array.isArray(dataSources)){
+                dataSources.forEach(function (source) {
+                    var service = $scope.findObject(source.providerId, source.type);
+                    if (!service || !service.fields){
+                        return false;
+                    }
+                    service.fields.forEach(function (_field) {
+                        var field =  JSON.parse(JSON.stringify(_field));
+                        field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
+                        field.providerName = source.providerName;
+                        field.providerType = source.type;
+                        field.objectId = source.objectId;
+                        fields.push(field);
+                    });
                 });
-            });
+            }
             return fields;
         };
+
+        $scope.$watchCollection(function(){
+            var fieldIds = [];
+            $scope.getAvailableFields().forEach(function(field){
+                fieldIds.push(field.id);
+            });
+            return fieldIds;
+        }, function() {
+           $scope.fields = $scope.getAvailableFields();
+        });
     });
 
     controllers.controller('TasksLogCtrl', function ($scope, Tasks, Activities, $routeParams, $filter, $http) {
