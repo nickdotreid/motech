@@ -1403,6 +1403,7 @@
                         field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
                         field.providerName = source.providerName;
                         field.providerType = source.type;
+                        field.providerId = source.providerId;
                         field.objectId = source.objectId;
                         fields.push(field);
                     });
