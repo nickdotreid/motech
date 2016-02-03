@@ -457,7 +457,7 @@
                 if (['UNICODE', 'TEXTAREA', 'DATE'].indexOf(scope.manipulationType) === -1){
                     return false;
                 }
-                if(!scope.manipulations){ // Break if isn't bound...
+                if(!scope.manipulations){
                     return false;
                 }
                 filter = scope.$parent.filter;
@@ -504,12 +504,13 @@
                     if ($(event.target).hasClass('field-remove')){
                         return;
                     }
-                    if (element.hasClass('active')){
-                        return;
-                    }
                     event.stopPropagation();
-                    window.getSelection().removeAllRanges(); // Make sure no text is selected...
-                    showPopup();
+                    if (element.hasClass('active')){
+                        hidePopup();
+                    } else {
+                        window.getSelection().removeAllRanges(); // Make sure no text is selected...
+                        showPopup();
+                    }
                 });
             }
         };
