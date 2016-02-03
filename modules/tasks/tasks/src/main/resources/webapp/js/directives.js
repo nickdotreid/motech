@@ -221,7 +221,7 @@
         };
     });
 
-    directives.directive('field', function () {
+    directives.directive('field', ['ManageTaskUtils', function (ManageTaskUtils) {
         return {
             restrict: 'E',
             replace: false,
@@ -230,8 +230,20 @@
                 editable: "=?"
             },
             link: function (scope, element, attrs) {
+                scope.msg = scope.$parent.msg;
                 if(!scope.field.manipulations || !Array.isArray(scope.field.manipulations)){
                     scope.field.manipulations = [];
+                }
+
+                if(scope.field.prefix == ManageTaskUtils.DATA_SOURCE_PREFIX){
+                    scope.displayName = "{0}.{1}#{2}.{3}".format(
+                        scope.msg(scope.field.providerName),
+                        scope.msg(scope.field.serviceName),
+                        scope.field.objectId,
+                        scope.msg(scope.field.displayName)
+                    );
+                } else {
+                    scope.displayName = scope.msg(scope.field.displayName);
                 }
 
                 element.data('value', scope.field);
@@ -245,7 +257,7 @@
             },
             templateUrl: '../tasks/partials/field.html'
         };
-    });
+    }]);
 
     directives.directive('draggable', function () {
         return {

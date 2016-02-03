@@ -1401,6 +1401,7 @@
                     service.fields.forEach(function (_field) {
                         var field =  JSON.parse(JSON.stringify(_field));
                         field.prefix = ManageTaskUtils.DATA_SOURCE_PREFIX;
+                        field.serviceName = service.displayName;
                         field.providerName = source.providerName;
                         field.providerType = source.type;
                         field.providerId = source.providerId;
