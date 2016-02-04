@@ -463,6 +463,8 @@
             },
             link: function (scope, element, attrs) {
                 var filter, hidePopup, showPopup;
+                filter = scope.$parent.filter;
+                scope.msg = scope.$parent.msg;
                 if(!scope.manipulationType){
                     return false;
                 }
@@ -472,10 +474,6 @@
                 if(!scope.manipulations){
                     return false;
                 }
-                filter = scope.$parent.filter;
-                scope.msg = function (str) {
-                    return str;
-                };
                 hidePopup = function () {
                     element.removeClass('active');
                     element.popover('destroy');
@@ -485,6 +483,7 @@
                     element.popover({
                       title: function () {
                          switch(scope.manipulationType){
+                             case 'UNICODE':
                              case 'STRING':
                                  return scope.msg('task.stringManipulation');
                              case 'DATE':
