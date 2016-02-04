@@ -230,7 +230,7 @@
                 editable: "=?"
             },
             link: function (scope, element, attrs) {
-                scope.msg = scope.$parent.msg;
+                scope.msg = scope.$parent.taskMsg;
                 if(!scope.field.manipulations || !Array.isArray(scope.field.manipulations)){
                     scope.field.manipulations = [];
                 }
