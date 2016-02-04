@@ -21,10 +21,7 @@
             <div class="form-group control-section">
                 <label class="col-md-2 col-sm-3 control-label task-label">{{msg('task.info.availableFields')}}:</label>
                 <div class="form-inline col-md-10 col-sm-9 move-element">
-                    <field ng-repeat="i in selectedTrigger.eventParameters" field="i" draggable />​
-                    <span ng-repeat="ds in getDataSources() | idLessThan:step.objectId">
-                        <field ng-repeat="i in findObject(ds.providerId, ds.type).fields" field="i" draggable />
-                    </span>
+                    <field ng-repeat="i in fields | idLessThan:step.objectId" field="i" draggable />​
                 </div>
             </div>
             <div class="form-group">
