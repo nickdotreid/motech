@@ -493,7 +493,7 @@
                          return null;
                       },
                       html: true,
-                      content: $compile('<manipulation-sorter type="'+scope.manipulationType+'" />')(scope),
+                      content: $compile('<manipulation-sorter type="manipulationType" manipulations="manipulations" />')(scope),
                       placement: "auto left",
                       trigger: 'manual'
                     }).on('shown.bs.popover', function(event){
@@ -531,6 +531,10 @@
         return {
             restrict: 'EA',
             templateUrl: '../tasks/partials/manipulation-sorter.html',
+            scope: {
+                type: '=',
+                manipulations: '='
+            },
             link: function (scope, element, attrs) {
                 $('.sortable', element).sortable({
                     placeholder: "ui-state-highlight",
@@ -548,24 +552,18 @@
                 });
             },
             controller: ['$scope', function ($scope) {
-                var stringManipulations = [
-                    {type:'toUpper'},
-                    {type:'toLower'},
-                    {type:'capitalize'},
-                    {type:'URLEncode'},
-                    {type:'join', argumentType:'text'},
-                    {type:'split', argumentType:'text'},
-                    {type:'substring', argumentType:'text'},
-                    {type:'format', argumentType:'format'},
-                    {type:'parseDate', argumentType:'text'}
-                ];
-                if ($scope.type === 'DATE'){
-                    true;
+                var manipulationType = $scope.type.toLowerCase();
+                $scope.manipulationTypes = [];
+                if(['unicode', 'string'].indexOf(manipulationType) > -1) {
+                    $scope.manipulationTypes = ['toUpper', 'toLower', 'capitalize', 'URLEncode', 'join', 'split', 'substring', 'format', 'parseDate'];
                 }
-                if ($scope.type === 'DATE2DATE'){
-                    true;
+                if('date' === manipulationType) {
+                    $scope.manipulationTypes.push('dateTime');
                 }
-                $scope.availableManipulations = stringManipulations;
+                if(['date', 'date2date'].indexOf(manipulationType) > -1) {
+                    $scope.manipulationTypes = $scope.manipulationTypes.concat(['plusDays', 'minusDays', 'plusHours', 'minusHours', 'plusMinutes', 'minusMinutes']);
+                }
+
                 this.addManipulation = function (type, argument) {
                     if(!argument){
                         argument = "";
@@ -603,7 +601,7 @@
         };
     });
 
-    directives.directive('manipulation', function ($compile) {
+    directives.directive('manipulation', ['$compile', 'ManageTaskUtils', function ($compile, ManageTaskUtils) {
         return {
             restrict : 'EA',
             require: '^manipulationSorter',
@@ -614,14 +612,22 @@
                 argument: '=?'
             },
             link : function (scope, element, attrs, manipulationSorter) {
-                scope.msg = scope.$parent.msg;
+                var manipulationSettings = {};
+                ManageTaskUtils.MANIPULATION_SETTINGS.forEach(function(manipulation){
+                    if(attrs.type === manipulation.name){
+                        manipulationSettings = manipulation;
+                    }
+                });
+
+                scope.msg = scope.$parent.$parent.$parent.msg;
                 scope.type = attrs.type;
                 if(attrs.active){
                     scope.active = true;
                 }
+
                 if(attrs.active) {
                     var attributeFieldTemplate = false;
-                    if (['join', 'split', 'substring', 'parsedate'].indexOf(scope.type) >= 0) {
+                    if (manipulationSettings.input && manipulationSettings.input !== '') {
                         attributeFieldTemplate = '<input type="text" ng-model="argument" />';
                         if(!scope.argument){
                             scope.argument = "";
@@ -650,7 +656,7 @@
                 }
             }
         };
-    });
+    }]);
 
     directives.directive('joinUpdate', function () {
         return {
