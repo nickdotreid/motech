@@ -249,10 +249,9 @@
                 element.data('value', scope.field);
 
                 element.click(function (event) {
-                    if(!$(event.target).hasClass("field-remove")){
-                        return false;
+                    if($(event.target).hasClass("field-remove")){
+                        element.remove();
                     }
-                    element.remove();
                 });
             },
             templateUrl: '../tasks/partials/field.html'
@@ -518,16 +517,14 @@
                     }, 10);
                 };
 
-                element.click(function (event) {
-                    if ($(event.target).hasClass('field-remove')){
-                        return;
-                    }
-                    event.stopPropagation();
-                    if (element.hasClass('active')){
-                        hidePopup();
-                    } else {
-                        window.getSelection().removeAllRanges(); // Make sure no text is selected...
-                        showPopup();
+                element.on('click', function (event) {
+                    if (!$(event.target).hasClass('field-remove')){
+                        if (element.hasClass('active')){
+                            hidePopup();
+                        } else {
+                            window.getSelection().removeAllRanges(); // Make sure no text is selected...
+                            showPopup();
+                        }
                     }
                 });
             }
