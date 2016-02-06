@@ -399,6 +399,12 @@
                     scope.$apply();
                 });
 
+                scope.$on('field.changed', function(event){
+                    event.stopPropagation();
+                    ngModel.$setViewValue(read());
+                    //scope.$apply() //update doesn't need to happen because fields manage their own display
+                });
+
                 element.on('keypress', function (event) {
                     var type = $(this).data('type');
 
@@ -477,6 +483,7 @@
                 hidePopup = function () {
                     element.removeClass('active');
                     element.popover('destroy');
+                    scope.$emit('field.changed'); // make sure any changes are updated (even if thats not true)
                 };
                 showPopup = function () {
                     element.addClass('active');
