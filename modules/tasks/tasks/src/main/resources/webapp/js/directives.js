@@ -669,8 +669,11 @@
 
                 if(attrs.active) {
                     var attributeFieldTemplate = false;
-                    if (manipulationSettings.input && manipulationSettings.input !== '') {
+                    if ((manipulationSettings.input && manipulationSettings.input !== '') || manipulationSettings.name === 'format') {
                         attributeFieldTemplate = '<input type="text" ng-model="argument" />';
+                        if(manipulationSettings.name === 'format'){
+                            attributeFieldTemplate = '<div format-manipulation ng-model="argument"></div>';
+                        }
                         if(!scope.argument){
                             scope.argument = "";
                         }
@@ -699,6 +702,31 @@
             }
         };
     }]);
+
+    directives.directive('formatManipulation', function () {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            templateUrl: '../tasks/partials/widgets/string-manipulation-format.html',
+            link: function (scope, el, attrs, ngModel) {
+                ngModel.$parsers.push(function (value) {
+                    return value.join(",");
+                });
+                ngModel.$formatters.push(function (value) {
+                    return value.split(",");
+                });
+                ngModel.$render = function () {
+                    scope.formatInput = ngModel.$viewValue;
+                };
+                scope.$watchCollection('formatInput', function(){
+                    ngModel.$setViewValue(scope.formatInput);
+                });
+                scope.deleteFormatInput = function (index) {
+                    scope.formatInput.splice(index, 1);
+                }
+            }
+        };
+    });
 
     directives.directive('joinUpdate', function () {
         return {
