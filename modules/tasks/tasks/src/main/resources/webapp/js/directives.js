@@ -354,6 +354,48 @@
                         }
                     });
                     return container.text();
+                },
+                findField = function(str){
+                    var index, startIndex, endIndex;
+                    startIndex = str.indexOf("{{");
+                    if(startIndex > -1){
+                        index = startIndex + 2;
+                    }
+                    while(index && (-1 < index < str.length)){
+                        endIndex = str.substring(index, str.length).indexOf("}}");
+                        if(endIndex === -1) {
+                            return false;
+                        }
+                        if(str.substring(index, index + endIndex).indexOf("{{") > -1){
+                            index = index + endIndex+2;
+                            continue;
+                        }
+                        return str.substring(startIndex, index + endIndex + 2);
+                    }
+                    return false;
+                },
+                parseField = function (originalStr) {
+                    var fieldStr, valueArr = [], str = originalStr;
+                    while(originalStr !== valueArr.join('')){
+                        if(str.substring(0,2) === "{{"){
+                            fieldStr = findField(str);
+                            if(!fieldStr){
+                                return false;
+                            }
+                            valueArr.push(fieldStr);
+                            str = str.substring(fieldStr.length, str.length);
+                        } else if (str.indexOf("{{") > -1) {
+                            valueArr.push(str.substring(0, str.indexOf("{{")));
+                            str = str.substring(str.indexOf("{{"), str.length);
+                        } else {
+                            valueArr.push(str);
+                        }
+                    }
+                    return valueArr;
+                }, makeFieldElement = function (str) {
+                    var fieldScope = scope.$parent.$new();
+                    fieldScope.field = ManageTaskUtils.parseField(str, scope.$parent.getAvailableFields());
+                    return $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
                 };
 
                 ngModel.$render = function () {
@@ -362,25 +404,21 @@
                     if(!ngModel.$viewValue){
                         return false;
                     }
-                    viewValueStr = ngModel.$viewValue; // copy becuase we are destructive with the value
-                    matches = viewValueStr.match(/\{\{[^\{\{]+\}\}/gi);
-                    if(matches){
-                        matches.forEach(function(match){
-                            var matchStart, fieldScope, fieldStr, matchElement;
-                            matchStart = viewValueStr.indexOf(match);
-                            if(matchStart > 0){
-                                element.append(viewValueStr.substring(0, matchStart));
+                    var parsedValue = parseField(ngModel.$viewValue);
+                    if (parsedValue) {
+                        parsedValue.forEach(function(str){
+                            if(
+                                str.substring(0,2) === "{{" &&
+                                str.substring(str.length-2, str.length) === "}}"
+                            ){
+                                element.append(makeFieldElement(
+                                    str.substring(2, str.length-2)
+                                ));
+                            } else {
+                                element.append(str);
                             }
-                            fieldScope = scope.$parent.$new();
-                            fieldStr = viewValueStr.substr(matchStart, match.length).replace('{{','').replace('}}','');
-                            fieldScope.field = ManageTaskUtils.parseField(fieldStr, scope.$parent.getAvailableFields());
-                            matchElement = $compile('<field field="field" editable="true" contenteditable="false" />')(fieldScope);
-                            element.append(matchElement);
-
-                            viewValueStr = viewValueStr.substring(matchStart + match.length, viewValueStr.length);
                         });
                     }
-                    element.append(viewValueStr);
                 };
 
                 scope.$watch(function () {
