@@ -230,7 +230,7 @@
                 editable: "=?"
             },
             link: function (scope, element, attrs) {
-                scope.msg = scope.$parent.taskMsg;
+                scope.msg = scope.$parent.taskMsg || scope.$parent.msg;
                 if(!scope.field.manipulations || !Array.isArray(scope.field.manipulations)){
                     scope.field.manipulations = [];
                 }
@@ -709,6 +709,9 @@
             require: 'ngModel',
             templateUrl: '../tasks/partials/widgets/string-manipulation-format.html',
             link: function (scope, el, attrs, ngModel) {
+                scope.getAvailableFields = scope.$parent.$parent.$parent.$parent.$parent.$parent.getAvailableFields;
+                scope.availableFields = scope.$parent.$parent.$parent.$parent.$parent.$parent.fields;
+                scope.msg = scope.$parent.$parent.$parent.$parent.$parent.$parent.taskMsg;
                 ngModel.$parsers.push(function (value) {
                     return value.join(",");
                 });
@@ -718,11 +721,14 @@
                 ngModel.$render = function () {
                     scope.formatInput = ngModel.$viewValue;
                 };
-                scope.$watchCollection('formatInput', function(){
-                    ngModel.$setViewValue(scope.formatInput);
-                });
+                scope.$watch('formatInput', function(newValue){
+                    ngModel.$setViewValue(newValue);
+                }, true);
                 scope.deleteFormatInput = function (index) {
                     scope.formatInput.splice(index, 1);
+                }
+                scope.addFormatInput = function () {
+                    scope.formatInput.push('');
                 }
             }
         };
