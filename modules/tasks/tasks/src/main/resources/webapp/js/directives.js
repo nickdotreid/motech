@@ -712,23 +712,36 @@
                 scope.getAvailableFields = scope.$parent.$parent.$parent.$parent.$parent.$parent.getAvailableFields;
                 scope.availableFields = scope.$parent.$parent.$parent.$parent.$parent.$parent.fields;
                 scope.msg = scope.$parent.$parent.$parent.$parent.$parent.$parent.taskMsg;
+
                 ngModel.$parsers.push(function (value) {
-                    return value.join(",");
+                    var arr = [];
+                    value.forEach(function(obj){
+                        if(obj.value){
+                            arr.push(obj.value);
+                        }
+                    });
+                    return arr.join(",");
                 });
                 ngModel.$formatters.push(function (value) {
-                    return value.split(",");
+                    var parsed = [];
+                    value.split(",").forEach(function(str) {
+                        parsed.push({ value: str });
+                    });
+                    return parsed;
                 });
+
                 ngModel.$render = function () {
                     scope.formatInput = ngModel.$viewValue;
                 };
                 scope.$watch('formatInput', function(newValue){
-                    ngModel.$setViewValue(newValue);
+                    ngModel.$setViewValue(scope.formatInput);
                 }, true);
+
                 scope.deleteFormatInput = function (index) {
                     scope.formatInput.splice(index, 1);
                 }
                 scope.addFormatInput = function () {
-                    scope.formatInput.push('');
+                    scope.formatInput.push({});
                 }
             }
         };

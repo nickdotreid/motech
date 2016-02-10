@@ -20,7 +20,7 @@
                     <div ng-repeat="lookupField in formatInput track by $index">
                         <div class="margin-before col-md-12 col-sm-12">
                             <div class="formatInput row col-md-11 col-sm-10">
-                                <editable-content data="lookupField" index="{{$index}}" type="format"></editable-content>
+                                <editable-content data="lookupField.value" index="{{$index}}" type="format"></editable-content>
                             </div>
                             <div class="formatInputDelete col-md-1 col-sm-2">
                                 <button ng-click="deleteFormatInput($index)" class="btn btn-danger">
