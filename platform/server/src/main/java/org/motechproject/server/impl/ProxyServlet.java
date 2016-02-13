@@ -59,6 +59,11 @@ public class ProxyServlet extends HttpServlet {
             LOGGER.warn("OSGi proxy servlet not yet initialized, yet received request for {} from {}",
                     req.getPathInfo(), req.getRemoteAddr());
         } else {
+            res.addHeader("Access-Control-Allow-Origin", "*");
+            res.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+            res.addHeader("Access-Control-Allow-Headers", "Content-Type");
+            res.addHeader("Access-Control-Max-Age", "1");
+            res.addHeader("Access-Control-Allow-Headers", "Authorization");
             felixServlet.service(req, res);
         }
     }
